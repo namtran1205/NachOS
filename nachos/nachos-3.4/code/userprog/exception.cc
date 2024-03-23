@@ -47,7 +47,14 @@
 //	"which" is the kind of exception.  The list of possible exceptions 
 //	are in machine.h.
 //----------------------------------------------------------------------
-
+void AdvanceProgramCounter()
+{
+    
+     registers[PrevPCReg] = registers[PCReg];	// for debugging, in case we
+						// are jumping into lala-land
+    registers[PCReg] = registers[NextPCReg];
+    registers[NextPCReg] = pcAfter;
+}
 void
 ExceptionHandler(ExceptionType which)
 {
@@ -95,6 +102,9 @@ ExceptionHandler(ExceptionType which)
 				DEBUG('a', "Shutdown, initiated by user program.\n");
 				interrupt->Halt();
                 break;
+            default:
+            AdvanceProgramCounter();
+
 
 
         }
