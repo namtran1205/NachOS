@@ -57,14 +57,48 @@ ExceptionHandler(ExceptionType which)
     case NoException:
         return;
     case PageFaultException:
-		DEBUG('a', "Page fault .\n");
+		DEBUG('a', "Page fault is happening.\n");
 		interrupt->Halt();
         break;
+    case ReadOnlyException:
+		DEBUG('a', "Page fault is happening.\n");
+		
+        interrupt->Halt();
+        break;
+    case BusErrorException:
+        DEBUG('a', "Bus Error is happening.\n");
+        interrupt->Halt();
+        break;
+
+    case AddressErrorException:
+        DEBUG('a', "Address Error is happening.\n");
+        interrupt->Halt();
+        break;
+
+    case OverflowException:
+        DEBUG('a', "Overflow is happening.\n");
+        interrupt->Halt();
+        break;
+
+    case IllegalInstrException: 
+        DEBUG('a', "Illegal Instruction is happening.\n");
+        interrupt->Halt();
+        break;
+
+    case NumExceptionTypes:
+
+    case SyscallException:
+    {
+        switch(type)
+        {
+            case SC_Halt:
+				DEBUG('a', "Shutdown, initiated by user program.\n");
+				interrupt->Halt();
+                break;
 
 
-
-    
-
+        }
+    }
     }
     if ((which == SyscallException) && (type == SC_Halt)) {
 	DEBUG('a', "Shutdown, initiated by user program.\n");
