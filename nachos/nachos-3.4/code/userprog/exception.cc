@@ -290,7 +290,21 @@ void ExceptionHandler(ExceptionType which)
                     IncreasePC();
                     return;
                 }
+                case SC_ReadChar:
 
+                case SC_PrintChar:
+
+                case SC_ReadString:
+
+                case SC_PrintString:
+
+                case SC_Open:
+
+                case SC_Read:
+
+                case SC_Write:
+
+                case SC_Close:
 
             }
         }
