@@ -184,13 +184,14 @@ void ExceptionHandler(ExceptionType which)
                     interrupt->Halt();
                     break; 
     
-                } 
+                }
+                /* 
                 case SC_Sub:
                 {                
                     AdvanceProgramCounter();
                     interrupt->Halt();
                         break;
-                }
+                }*/
                 case SC_ReadInt:
                 {
                     const int MAX_BUFFER = 255;

@@ -1,10 +1,21 @@
 #include "syscall.h"
-
-int main() 
+#include "copyright.h"
+#define maxlen 32
+int
+main()
 {
-    int a, b, c;
-    a = 5;
-    b = 5;
-    c = a + b;
+    int len;
+    char filename[maxlen +1];
+/*Create a file*/
+    if (Create(“text.txt”) = = -1)
+    {
+    // xuất thông báo lỗi tạo tập tin
+	printf("\nCan not create file.\n");
+    }
+    else
+    {
+    // xuất thông báo tạo tập tin thành công
+	printf("\nSuccessfully create file\n");
+    }
     Halt();
 }
