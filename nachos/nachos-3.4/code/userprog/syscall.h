@@ -18,17 +18,25 @@
 /* system call codes -- used by the stubs to tell the kernel which system call
  * is being asked for
  */
-#define SC_Halt		0
-#define SC_Exit		1
-#define SC_Exec		2
-#define SC_Join		3
-#define SC_Create	4
-#define SC_Open		5
-#define SC_Read		6
-#define SC_Write	7
-#define SC_Close	8
-#define SC_Fork		9
-#define SC_Yield	10
+#define SC_Halt		    0
+#define SC_Exit		    1
+#define SC_Exec		    2
+#define SC_Join		    3
+#define SC_Create	    4
+#define SC_Open		    5
+#define SC_Read		    6
+#define SC_Write	    7
+#define SC_Close	    8
+#define SC_Fork		    9
+#define SC_Yield	    10
+#define SC_ReadInt	    11
+#define SC_PrintInt	    12
+#define SC_ReadFloat    13
+#define SC_PrintFloat   14
+#define SC_ReadChar 	15
+#define SC_PrintChar    16
+#define SC_ReadString   17
+#define SC_PrintString  18
 
 #ifndef IN_ASM
 
@@ -122,7 +130,37 @@ void Fork(void (*func)());
 /* Yield the CPU to another runnable thread, whether in this address space 
  * or not. 
  */
-void Yield();		
+void Yield();
+
+
+/* Read an integer number input by user from console. */
+int ReadInt();
+
+/* Write an integer number console. */
+void PrintInt(int number);
+
+/* Read a float number input by user from console 
+ * If not a float number, return zero (0.0).
+ */
+float ReadFloat();
+
+/* Write a float number console */
+void PrintFloat(float number);
+
+/* Read a character input by user from console */
+char ReadChar();
+
+/* Write a character to console */
+void PrintChar(char character);
+
+/* Read a string input by user from console into the buffer.
+ * The string will end when the user presses enter
+ * or when its length is greater than or equal to the specified length
+ */
+void ReadString (char* buffer, int length);
+
+/* Write a string to console*/
+void PrintString (char* buffer);
 
 #endif /* IN_ASM */
 
