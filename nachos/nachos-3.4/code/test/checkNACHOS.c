@@ -7,7 +7,7 @@ main()
     int len;
     char filename[maxlen +1];
 /*Create a file*/
-    if (Create(“text.txt”) = = -1)
+    if (SC_CreateFile(“text.txt”) == -1)
     {
     // xuất thông báo lỗi tạo tập tin
 	printf("\nCan not create file.\n");
