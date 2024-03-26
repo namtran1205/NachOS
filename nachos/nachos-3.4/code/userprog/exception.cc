@@ -291,6 +291,141 @@ void ExceptionHandler(ExceptionType which)
                     IncreasePC();
                     return;
                 }
+                case SC_ReadFloat:
+                {
+                    const int MAX_BUFFER = 255;
+                    char* buffer = new char[MAX_BUFFER]; // Allocate memory for input buffer
+
+                    int numBytes = gSynchConsole->Read(buffer, MAX_BUFFER); // Read input from console
+
+                    float number = 0.0f; // Initialize variable to store the float
+                    bool isNegative = false; // Flag to indicate if the number is negative
+                    int firstNumIndex = 0; // Index to start parsing the number
+
+                    // Check if the number is negative
+                    if (buffer[0] == '-') {
+                        isNegative = true;
+                        firstNumIndex = 1;
+                    }
+
+                    // Flag to indicate if decimal point has been encountered
+                    bool decimalPointEncountered = false;
+                    int decimalPosition = -1; // Position of the decimal point
+
+                    // Parse each character in the buffer to extract the float
+                    for (int i = firstNumIndex; i < numBytes; i++) {
+                        // Check if the character is a digit
+                        if (buffer[i] >= '0' && buffer[i] <= '9') {
+                            // Convert character to float and calculate the final number
+                            number = number * 10.0f + (float)(buffer[i] - '0');
+
+                            // If decimal point has been encountered, adjust decimal position
+                            if (decimalPointEncountered) {
+                                decimalPosition++;
+                            }
+                        } else if (buffer[i] == '.' && !decimalPointEncountered) {
+                            // If decimal point encountered for the first time
+                            decimalPointEncountered = true;
+                            decimalPosition = 0;
+                        } else {
+                            // If non-digit character encountered (other than '-' or '.'), print error message and return
+                            printf("\n\n The floating point number is not valid.");
+                            DEBUG('a', "\n The floating point number is not valid.");
+                            machine->WriteRegister(2, 0); // Return 0 in register 2
+                            IncreasePC();
+                            delete[] buffer; // Free allocated memory
+                            return;
+                        }
+                    }
+
+                    // Adjust the sign of the number if it is negative
+                    if (isNegative) {
+                        number *= -1.0f;
+                    }
+
+                    // Adjust the number based on the position of the decimal point
+                    if (decimalPosition >= 0) {
+                        // Divide the number by 10^decimalPosition to adjust the decimal point
+                        float divisor = 1.0f;
+                        for (int i = 0; i < decimalPosition; i++) {
+                            divisor *= 10.0f;
+                        }
+                        number /= divisor;
+                    }
+
+                    // Write the final number to register 2
+                    machine->WriteRegister(2, *(int*)&number); // Store the float as an integer for simplicity
+                    IncreasePC();
+                    delete[] buffer; // Free allocated memory
+                    break;
+                }
+                case SC_PrintFloat:
+                {
+                    // Read the float to print from register 4
+                    int floatBits = machine->ReadRegister(4);
+                    
+                    // Convert the integer representation of the float back to a float
+                    float number = *(float*)&floatBits;
+                    
+                    // Check if the number is 0.0
+                    if (number == 0.0f) {
+                        gSynchConsole->Write("0.0", 3); // Print "0.0"
+                        IncreasePC();
+                        return;
+                    }
+                    
+                    // Check if the number is negative
+                    bool isNegative = false;
+                    if (number < 0.0f) {
+                        isNegative = true;
+                        number *= -1.0f;
+                    }
+                    
+                    // Convert the float to string
+                    char buffer[64]; // Allocate buffer for string representation
+                    int index = 0;
+                    if (isNegative) {
+                        buffer[index++] = '-'; // Add negative sign if necessary
+                    }
+                    
+                    // Convert the integer part of the float to string
+                    int intPart = (int)number;
+                    if (intPart == 0) {
+                        buffer[index++] = '0'; // If integer part is 0, add '0' to string
+                    } else {
+                        // Convert each digit of the integer part to character and add to string
+                        int temp = intPart;
+                        while (temp > 0) {
+                            buffer[index++] = '0' + (temp % 10);
+                            temp /= 10;
+                        }
+                    }
+                    
+                    // Add decimal point to string
+                    buffer[index++] = '.';
+                    
+                    // Convert the fractional part of the float to string
+                    float fractionPart = number - (float)intPart;
+                    const int maxFractionDigits = 6; // Maximum number of fractional digits to display
+                    int numFractionDigits = 0; // Count of fractional digits
+                    
+                    // Loop to convert fractional part to string
+                    while (fractionPart > 0 && numFractionDigits < maxFractionDigits) {
+                        fractionPart *= 10;
+                        int digit = (int)fractionPart;
+                        buffer[index++] = '0' + digit;
+                        fractionPart -= (float)digit;
+                        numFractionDigits++;
+                    }
+                    
+                    // Null-terminate the string
+                    buffer[index] = '\0';
+                    
+                    // Write the string to console
+                    gSynchConsole->Write(buffer, index);
+                    IncreasePC();
+                    return;
+                }
                 case SC_ReadChar:
                 {
                     const int MAX_BYTES = 255;
