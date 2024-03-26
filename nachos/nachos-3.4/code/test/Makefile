@@ -35,7 +35,7 @@ CPP = gcc -E
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
 
-all: halt shell matmult sort checkNACHOS
+all: halt shell matmult sort createfile
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.c > strt.s
@@ -71,3 +71,9 @@ checkNACHOS.o: checkNACHOS.c
 checkNACHOS: checkNACHOS.o checkNACHOS.o
 	$(LD) $(LDFLAGS) start.o checkNACHOS.o -o checkNACHOS.coff
 	../bin/coff2noff checkNACHOS.coff checkNACHOS
+
+createfile.o: createfile.c 
+ $(CC) $(CFLAGS) -c createfile.c 
+createfile: createfile.o start.o 
+ $(LD) $(LDFLAGS) start.o createfile.o -o createfile.coff 
+ ../bin/coff2noff createfile.coff createfile

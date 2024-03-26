@@ -52,25 +52,25 @@ system_trap()
 
 	switch (syscallno)
 	{
-		case SYS_exit:	/*1*/
+		case SC_Exit:	/*1*/
 			printstatistics();
 			fflush(stdout);
 			exit(0);
 			break;
-		case SYS_read:	/*3*/
+		case SC_Read:	/*6*/
 			Reg[1] = 
 				read(u_to_int_fd(o0), u_to_int_addr(o1), o2);
 			break;
-		case SYS_write:	/*4*/
+		case SC_Write:	/*7*/
 			Reg[1] = 
 				write(u_to_int_fd(o0), u_to_int_addr(o1), o2);
 			break;
 
-		case SYS_open:	/*5*/
+		case SC_Open:	/*5*/
 			Reg[1] = open(u_to_int_addr(o0), o1, o2); /* */
 			break;
 
-		case SYS_close:	/*6*/
+		case SC_Close:	/*8*/
 			Reg[1] = 0;	/* hack */
 			break;
 
