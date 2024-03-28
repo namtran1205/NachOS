@@ -43,30 +43,88 @@
 				// implementation is available
 class FileSystem {
   public:
-    FileSystem(bool format) {}
+	OpenFile** openf; //De kiem tra xem file co dang mo khong
+    int index;
 
-    bool Create(char *name, int initialSize) { 
-	int fileDescriptor = OpenForWrite(name);
-
-	if (fileDescriptor == -1) return FALSE;
-	Close(fileDescriptor); 
-	return TRUE; 
-	}
-
-    OpenFile* Open(char *name) {
+	OpenFile* Open(char *name) {
 	  int fileDescriptor = OpenForReadWrite(name, FALSE);
 
 	  if (fileDescriptor == -1) return NULL;
 	  return new OpenFile(fileDescriptor);
-      }
+    }
+
+	/**
+    * @brief Open a file with the specified name and type.
+    * 
+    * @param name The name of the file to open.
+    * @param type The type of file to open.
+    * @return A pointer to the opened file, or NULL if opening failed.
+    */
+	OpenFile* Open(char *name, int type) {
+	    // Attempt to open the file for read and write operations
+	    int fileDescriptor = OpenForReadWrite(name, FALSE);
+
+	    // Check if opening the file failed
+	    if (fileDescriptor == -1) {
+	        return NULL;
+	    }
+
+	    // Create and return a new OpenFile object
+	    return new OpenFile(fileDescriptor, type);
+	}
+
+
+    //Dinh nghia lai ham khoi tao cua FileSystem
+    FileSystem(bool format) {
+    	openf = new OpenFile*[15];
+    	index = 0;
+    	for (int i = 0; i < 15; ++i)
+    	{
+    	    openf[i] = NULL;
+    	}
+    	this->Create("stdin", 0);
+    	this->Create("stdout", 0);
+    	openf[index++] = this->Open("stdin", 2);
+    	openf[index++] = this->Open("stdout", 3);
+    }
+
+    //Ham huy doi tuong FileSystem
+    ~FileSystem()
+    {
+        for (int i = 0; i < 15; ++i)
+        {
+            if (openf[i] != NULL) delete openf[i];
+        }
+        delete[] openf;
+    }
+
+    bool Create(char *name, int initialSize) { 
+		int fileDescriptor = OpenForWrite(name);
+
+		if (fileDescriptor == -1) return FALSE;
+		Close(fileDescriptor); 
+		return TRUE; 
+	}
 
     bool Remove(char *name) { return Unlink(name) == 0; }
+
+	int FindFreeSlot()
+    {
+        for(int i = 2; i < 15; i++)
+        {
+            if(openf[i] == NULL) return i;
+        }
+        return -1;
+    }
 
 };
 
 #else // FILESYS
 class FileSystem {
   public:
+	OpenFile** openf;
+    int index;
+
     FileSystem(bool format);		// Initialize the file system.
 					// Must be called *after* "synchDisk" 
 					// has been initialized.
@@ -79,11 +137,28 @@ class FileSystem {
 
     OpenFile* Open(char *name); 	// Open a file (UNIX open)
 
+	OpenFile* Open(char *name, int type) {
+        int fileDescriptor = OpenForReadWrite(name, FALSE);
+
+        if (fileDescriptor == -1) return NULL;
+        //index++;
+        return new OpenFile(fileDescriptor, type);
+    }
+
     bool Remove(char *name);  		// Delete a file (UNIX unlink)
 
     void List();			// List all the files in the file system
 
     void Print();			// List all the files and their contents
+
+	int FindFreeSlot()
+    {
+        for(int i = 2; i < 15; i++)
+        {
+            if(openf[i] == NULL) return i;
+        }
+        return -1;
+    }
 
   private:
    OpenFile* freeMapFile;		// Bit map of free disk blocks,

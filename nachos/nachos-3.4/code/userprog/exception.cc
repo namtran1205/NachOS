@@ -47,14 +47,6 @@
 //	"which" is the kind of exception.  The list of possible exceptions 
 //	are in machine.h.
 //----------------------------------------------------------------------
-void AdvanceProgramCounter()
-{
-    int pcAfter = registers[NextPCReg] + 4;
-     registers[PrevPCReg] = registers[PCReg];	// for debugging, in case we
-						// are jumping into lala-land
-    registers[PCReg] = registers[NextPCReg];
-    registers[NextPCReg] = pcAfter;
-}
 
 // Change the Program Counter register back by 4 bytes to continue fetching instructions
 void IncreasePC()
@@ -92,6 +84,21 @@ char* User2System(int virtAddr,int limit)
     return kernelBuf; 
 }
 
+int System2User(int virtAddr,int len,char* buffer)
+{
+    if (len < 0) return -1;
+    if (len == 0)return len;
+    int i = 0;
+    int oneChar = 0 ;
+
+    do {
+        oneChar= (int) buffer[i];
+        machine->WriteMem(virtAddr+i,1,oneChar);
+        i ++;
+    } while(i < len && oneChar != 0);
+    
+    return i;
+}
 
 void ExceptionHandler(ExceptionType which)
 {
@@ -176,7 +183,7 @@ void ExceptionHandler(ExceptionType which)
                         delete filename; 
                         return; 
                     } 
-                    AdvanceProgramCounter();
+                    IncreasePC();
                     machine->WriteRegister(2,0); // trả về cho chương trình  
                         // người dùng thành công 
                     delete filename; 
@@ -188,7 +195,7 @@ void ExceptionHandler(ExceptionType which)
                 /* 
                 case SC_Sub:
                 {                
-                    AdvanceProgramCounter();
+                    IncreasePC();
                     interrupt->Halt();
                         break;
                 }*/
@@ -453,7 +460,8 @@ void ExceptionHandler(ExceptionType which)
                 }
                 case SC_PrintChar:
                 {
-                    char temp[] = (char)machine->ReadRegister(4);
+                    char temp = (char)machine->ReadRegister(4);
+
                     gSynchConsole->Write(&temp, 1);
                     break;
                 }
@@ -464,7 +472,7 @@ void ExceptionHandler(ExceptionType which)
                     address = machine->ReadRegister(4); // Read the buffer parameter address from register 4
                     length = machine->ReadRegister(5); // Read the maximum length of the input string from register 5
                     buffer = User2System(address, length); // Copy string from User Space to System Space
-                    if (buffer != nullptr) {
+                    if (buffer != NULL) {
                         gSynchConsole->Read(buffer, length); // Use SynchConsole's Read function to read the string
                         System2User(address, length, buffer); // Copy string from System Space to User Space
                         delete[] buffer; // Free allocated memory
