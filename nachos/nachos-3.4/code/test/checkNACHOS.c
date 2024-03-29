@@ -4,9 +4,10 @@
 int
 main()
 {
-    int a;
-    a = ReadInt();
-    PrintInt(a);
+    char a;
+    a = ReadChar();
+    PrintChar(a);
+
     Halt();
     return 0;
 }

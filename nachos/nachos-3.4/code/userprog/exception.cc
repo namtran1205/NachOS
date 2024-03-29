@@ -48,6 +48,23 @@
 //	are in machine.h.
 //----------------------------------------------------------------------
 
+// @brief Print buffer to console instantly
+/// @param buffer Buffer to print
+void SynchPrint(char *buffer)
+{
+    gSynchConsole->Write(buffer, strlen(buffer) + 1);
+    // gSynchConsole->Write("\n", 1);
+}
+
+/// @brief Print number to console instantly
+/// @param number Number to print
+void SynchPrint(int number)
+{
+    char buffer[255];
+    sprintf(buffer, "%d", number);
+    SynchPrint(buffer);
+}
+
 // Change the Program Counter register back by 4 bytes to continue fetching instructions
 void IncreasePC()
 {
@@ -236,7 +253,7 @@ void ExceptionHandler(ExceptionType which)
                     if (isNegative) {
                         number *= -1;
                     }
-                
+                    printf("SC_ReadInt: %d \n", number);
                     // Write the final number to register 2
                     machine->WriteRegister(2, number);
                     IncreasePC();
@@ -244,59 +261,84 @@ void ExceptionHandler(ExceptionType which)
                 }
                 case SC_PrintInt:
                 {
-                    // Read the integer to print from register 4
+                    // Input: mot so integer
+                    // Output: khong co 
+                    // Chuc nang: In so nguyen len man hinh console
                     int number = machine->ReadRegister(4);
-                
-                    // If the number is 0, print "0" and return
-                    if (number == 0) {
-                        gSynchConsole->Write("0", 1);
+                    printf("SC_PrintInt: %d \n", number);
+                    SynchPrint("Input Parameter: ");
+                    SynchPrint(number);
+                    char* buffer;
+                    int MAX_BUFFER = 255;
+                    buffer = new char[MAX_BUFFER + 1];
+                    int t_number = number; // bien tam cho number
+                    /*Qua trinh chuyen so thanh chuoi de in ra man hinh*/
+                    bool isNegative = false; // gia su la so duong
+                    int numberOfNum = 0; // Bien de luu so chu so cua number
+                    int firstNumIndex = 0; 
+		            if(number == 0)
+                    {
+                        gSynchConsole->Write("0", 1); // In ra man hinh so 0
                         IncreasePC();
-                        return;
+                        return;    
                     }
-                
-                    bool isNegative = false; // Flag to indicate if the number is negative
-                    int numberOfDigits = 0; // Variable to store the number of digits in the number
-                    int firstNumIndex = 0; // Index to start printing the number from
-                
-                    // Check if the number is negative
-                    if (number < 0) {
+                    
+
+
+                    if(number < 0)
+                    {
                         isNegative = true;
-                        number *= -1; // Make the number positive
-                        firstNumIndex = 1; // Skip the negative sign while printing
+                        number = number * -1; // Nham chuyen so am thanh so duong de tinh so chu so
+                        firstNumIndex = 1; 
+                    } 	
+                    
+
+                    while(t_number)
+                    {
+                        numberOfNum++;
+                        t_number /= 10;
                     }
-                
-                    // Count the number of digits in the number
-                    int tempNumber = number;
-                    while (tempNumber) {
-                        numberOfDigits++;
-                        tempNumber /= 10;
+    
+		    // Tao buffer chuoi de in ra man hinh
+
+                    for(int i = firstNumIndex + numberOfNum - 1; i >= firstNumIndex; i--)
+                    {
+                        buffer[i] = (char)((number % 10) + 48);
+                        number /= 10;
                     }
-                
-                    char* buffer; // Buffer to store the string representation of the number
-                    const int MAX_BUFFER = 255;
-                    buffer = new char[MAX_BUFFER + 1]; // Allocate memory for buffer
-                
-                    // Convert the number to a string
-                    for (int i = firstNumIndex + numberOfDigits - 1; i >= firstNumIndex; i--) {
-                        buffer[i] = (char)((number % 10) + '0'); // Convert digit to character
-                        number /= 10; // Move to the next digit
+                    if(isNegative)
+                    {
+                        buffer[0] = '-';
+			            buffer[numberOfNum + 1] = 0;
+                        gSynchConsole->Write(buffer, numberOfNum + 1);
+                                delete buffer;
+                                IncreasePC();
+                                return;
                     }
-                
-                    // Add negative sign if necessary
-                    if (isNegative) {
-                        buffer[0] = '-'; // Add negative sign at the beginning
-                        buffer[numberOfDigits + 1] = '\0'; // Null-terminate the string
-                        gSynchConsole->Write(buffer, numberOfDigits + 1); // Write the string to console
-                        delete[] buffer; // Free allocated memory
-                        IncreasePC();
-                        return;
-                    }
-                
-                    buffer[numberOfDigits] = '\0'; // Null-terminate the string
-                    gSynchConsole->Write(buffer, numberOfDigits); // Write the string to console
-                    delete[] buffer; // Free allocated memory
+		            buffer[numberOfNum] = 0;
+                    char buffer2[255];
+                    sprintf(buffer2, "%d", number);	
+                    printf("\n\nSC_PrintInt Khong in ra so nguyen buffer 1\n\n");
+                    //gSynchConsole->Write(buffer, numberOfNum);
+                    gSynchConsole->Write(buffer2, numberOfNum);
+                    printf("\nSC_PrintInt in ra so nguyen buffer 2\n\n");
+
+                    delete buffer;
                     IncreasePC();
-                    return;
+                    return;        		
+                    // int number = machine->ReadRegister(4);
+                
+                    // // If the number is 0, print "0" and return
+                    // if (number == 0) {
+                    //     gSynchConsole->Write("0", 1);
+                    //     IncreasePC();
+                    //     return;
+                    // }
+                    // char buffer[255];
+                    // sprintf(buffer, "%d", number);
+                    // gSynchConsole->Write(buffer, 2); // Write the string to console
+                    // IncreasePC();
+                    // return;
                 }
                 case SC_ReadFloat:
                 {
@@ -435,28 +477,36 @@ void ExceptionHandler(ExceptionType which)
                 }
                 case SC_ReadChar:
                 {
-                    const int MAX_BYTES = 255;
-                    char buffer[MAX_BYTES];
-                    int numBytes = gSynchConsole->Read(buffer, MAX_BYTES);
-
-                    if (numBytes > 1) {
-                        DEBUG('a', "\nError: Please enter no more than 1 character");
-                        machine->WriteRegister(2, 0);
-                    } else if (numBytes == 0) {
-                        DEBUG('a', "\nError: No character is founded");
-                        machine->WriteRegister(2, 0);
-                    } else {
-                        // Take the character at index 0 from the retrieved string, and return it to register R2
-                        char c = buffer[0];
-                        machine->WriteRegister(2, c);
-                    }
-
-                    // Release dynamically allocated memory
-                    //delete[] buffer; // Use delete[] instead of delete for arrays
-                    delete[] buffer;
-                    //IncreasePC(); // Error system
-                    //return;
-                    break;
+                    //Input: Khong co
+			        //Output: Duy nhat 1 ky tu (char)
+			        //Cong dung: Doc mot ky tu tu nguoi dung nhap
+			        int maxBytes = 255;
+			        char* buffer = new char[255];
+			        int numBytes = gSynchConsole->Read(buffer, maxBytes);
+        
+			        if(numBytes > 1) //Neu nhap nhieu hon 1 ky tu thi khong hop le
+			        {
+			        	printf("Chi duoc nhap duy nhat 1 ky tu!");
+			        	DEBUG('a', "\nERROR: Chi duoc nhap duy nhat 1 ky tu!");
+			        	machine->WriteRegister(2, 0);
+			        }
+			        else if(numBytes == 0) //Ky tu rong
+			        {
+			        	printf("Ky tu rong!");
+			        	DEBUG('a', "\nERROR: Ky tu rong!");
+			        	machine->WriteRegister(2, 0);
+			        }
+			        else
+			        {
+			        	//Chuoi vua lay co dung 1 ky tu, lay ky tu o index = 0, return vao thanh ghi R2
+			        	char c = buffer[0];
+			        	machine->WriteRegister(2, c);
+			        }
+        
+			        delete buffer;
+			        //IncreasePC(); // error system
+			        //return;
+			        break;
                 }
                 case SC_PrintChar:
                 {
