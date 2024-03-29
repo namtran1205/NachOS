@@ -172,6 +172,7 @@ int
 OpenForReadWrite(char *name, bool crashOnError)
 {
     int fd = open(name, O_RDWR, 0);
+    printf("OpenForReadWrite: 1 fd = %d", fd);
 
     ASSERT(!crashOnError || fd >= 0);
     return fd;

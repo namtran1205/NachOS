@@ -8,4 +8,5 @@ main()
     a = ReadInt();
     PrintInt(a);
     Halt();
+    return 0;
 }

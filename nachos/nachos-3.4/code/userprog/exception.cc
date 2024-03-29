@@ -502,8 +502,7 @@ void ExceptionHandler(ExceptionType which)
                     char* filename;
                     filename = User2System(address, 32); // Copy chuoi tu vung nho User Space sang System Space voi bo dem name dai MaxFileLength
                     //Kiem tra xem OS con mo dc file khong
-                    
-                    // update 4/1/2018
+
                     int freeSlot = fileSystem->FindFreeSlot();
                     if (freeSlot != -1) //Chi xu li khi con slot trong
                     {
