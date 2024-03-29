@@ -41,9 +41,8 @@ __start:
  * 	convention on the MIPS.
  * -------------------------------------------------------------
  */
-
 	.globl Halt
-	.ent	Halt
+	.ent   Halt
 Halt:
 	addiu $2,$0,SC_Halt
 	syscall
@@ -74,13 +73,13 @@ Join:
 	j	$31
 	.end Join
 
-	.globl CreateFile
-	.ent	CreateFile
-CreateFile:
-	addiu $2,$0,SC_CreateFile
+	.globl Create
+	.ent	Create
+Create:
+	addiu $2,$0,SC_Create
 	syscall
 	j	$31
-	.end CreateFile
+	.end Create
 
 	.globl Open
 	.ent	Open
@@ -146,16 +145,13 @@ PrintInt:
 	j	$31
 	.end PrintInt
 
-	.globl ReadChar
-	.ent ReadChar
-
 	.globl ReadFloat
 	.ent ReadFloat
 ReadFloat:
 	addiu $2, $0, SC_ReadFloat
 	syscall
 	j	$31
-	.end SC_ReadFloat 
+	.end ReadFloat 
 
 	.globl PrintFloat
 	.ent PrintFloat
@@ -164,6 +160,9 @@ PrintFloat:
 	syscall
 	j	$31
 	.end PrintFloat 
+
+	.globl ReadChar
+	.ent ReadChar
 	
 ReadChar:
 	addiu $2, $0, SC_ReadChar
@@ -173,6 +172,7 @@ ReadChar:
 
 	.globl PrintChar
 	.ent PrintChar
+
 PrintChar:
 	addiu $2, $0, SC_PrintChar
 	syscall
@@ -189,11 +189,13 @@ ReadString:
 
 	.globl PrintString
 	.ent PrintString
+
 PrintString:
 	addiu $2, $0, SC_PrintString
 	syscall
 	j	$31
 	.end PrintString
+
 
 /* dummy function to keep gcc happy */
         .globl  __main

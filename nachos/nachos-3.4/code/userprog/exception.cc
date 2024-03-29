@@ -146,7 +146,7 @@ void ExceptionHandler(ExceptionType which)
 	    			DEBUG('a', "Shutdown, initiated by user program.\n");
 	    			interrupt->Halt();
                     break;
-                case SC_CreateFile: 
+                case SC_Create: 
                 {
                     int address; 
                     char* filename; 

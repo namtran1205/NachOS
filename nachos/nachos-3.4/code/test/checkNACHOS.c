@@ -4,18 +4,8 @@
 int
 main()
 {
-    int len;
-    char filename[maxlen +1];
-/*Create a file*/
-    if (SC_CreateFile(“text.txt”) == -1)
-    {
-    // xuất thông báo lỗi tạo tập tin
-	printf("\nCan not create file.\n");
-    }
-    else
-    {
-    // xuất thông báo tạo tập tin thành công
-	printf("\nSuccessfully create file\n");
-    }
+    int a;
+    a = ReadInt();
+    PrintInt(a);
     Halt();
 }
