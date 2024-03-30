@@ -48,23 +48,6 @@
 //	are in machine.h.
 //----------------------------------------------------------------------
 
-// @brief Print buffer to console instantly
-/// @param buffer Buffer to print
-void SynchPrint(char *buffer)
-{
-    gSynchConsole->Write(buffer, strlen(buffer) + 1);
-    // gSynchConsole->Write("\n", 1);
-}
-
-/// @brief Print number to console instantly
-/// @param number Number to print
-void SynchPrint(int number)
-{
-    char buffer[255];
-    sprintf(buffer, "%d", number);
-    SynchPrint(buffer);
-}
-
 // Change the Program Counter register back by 4 bytes to continue fetching instructions
 void IncreasePC()
 {
@@ -218,64 +201,81 @@ void ExceptionHandler(ExceptionType which)
                 }*/
                 case SC_ReadInt:
                 {
-                    const int MAX_BUFFER = 255;
-                    char* buffer = new char[MAX_BUFFER]; // Allocate memory for input buffer
-                
-                    int numBytes = gSynchConsole->Read(buffer, MAX_BUFFER); // Read input from console
-                
-                    int number = 0; // Initialize variable to store the integer
-                    bool isNegative = false; // Flag to indicate if the number is negative
-                    int firstNumIndex = 0; // Index to start parsing the number
-                
-                    // Check if the number is negative
-                    if (buffer[0] == '-') {
-                        isNegative = true;
-                        firstNumIndex = 1;
-                    }
-                
-                    // Parse each character in the buffer to extract the integer
-                    for (int i = firstNumIndex; i < numBytes; i++) {
-                        // Check if the character is a digit
-                        if (buffer[i] < '0' || buffer[i] > '9') {
-                            // If the character is not a digit, print error message and return
-                            printf("\n\n The integer number is not valid.");
-                            DEBUG('a', "\n The integer number is not valid.");
-                            machine->WriteRegister(2, 0); // Return 0 in register 2
-                            IncreasePC();
-                            delete[] buffer; // Free allocated memory
-                            return;
-                        }
-                        // Convert character to integer and calculate the final number
-                        number = number * 10 + (int)(buffer[i] - '0');
-                    }
-                
-                    // Adjust the sign of the number if it is negative
-                    if (isNegative) {
-                        number *= -1;
-                    }
-                    printf("SC_ReadInt: %d \n", number);
-                    // Write the final number to register 2
-                    machine->WriteRegister(2, number);
-                    IncreasePC();
-                    delete[] buffer; // Free allocated memory
-                }
-                case SC_PrintInt:
-                {
-                    // Input: mot so integer
-                    // Output: khong co 
-                    // Chuc nang: In so nguyen len man hinh console
-                    int number = machine->ReadRegister(4);
-                    printf("SC_PrintInt: %d \n", number);
-                    SynchPrint("Input Parameter: ");
-                    SynchPrint(number);
                     char* buffer;
                     int MAX_BUFFER = 255;
                     buffer = new char[MAX_BUFFER + 1];
-                    int t_number = number; // bien tam cho number
-                    /*Qua trinh chuyen so thanh chuoi de in ra man hinh*/
-                    bool isNegative = false; // gia su la so duong
-                    int numberOfNum = 0; // Bien de luu so chu so cua number
-                    int firstNumIndex = 0; 
+                    gSynchConsole->Write("Type an integer number: ", strlen("Type an integer number: ") + 1);
+                    int numbytes = gSynchConsole->Read(buffer, MAX_BUFFER);// doc buffer toi da MAX_BUFFER ki tu, tra ve so ki tu doc dc
+                    int number = 0; // so luu ket qua tra ve cuoi cung
+						
+                    /* Qua trinh chuyen doi tu buffer sang so nguyen int */
+			
+                    // Xac dinh so am hay so duong                       
+                    bool isNegative = false; // Gia thiet la so duong.
+                    int firstNumIndex = 0;
+                    int lastNumIndex = 0;
+                    if(buffer[0] == '-')
+                    {
+                        isNegative = true;
+                        firstNumIndex = 1;
+                        lastNumIndex = 1;                        			   		
+                    }
+                    
+                    // Kiem tra tinh hop le cua so nguyen buffer
+                    for(int i = firstNumIndex; i < numbytes; i++)					
+                    {
+                        if(buffer[i] == '.') /// 125.0000000 van la so
+                        {
+                            int j = i + 1;
+                            for(; j < numbytes; j++)
+                            {
+				                // So khong hop le
+                                if(buffer[j] != '0')
+                                {
+                                    printf("\n\n The integer number is not valid");
+                                    DEBUG('a', "\n The integer number is not valid");
+                                    machine->WriteRegister(2, 0);
+                                    IncreasePC();
+                                    delete buffer;
+                                    return;
+                                }
+                            }
+                            // la so thoa cap nhat lastNumIndex
+                            lastNumIndex = i - 1;				
+                            break;                           
+                        }
+                        else if(buffer[i] < '0' && buffer[i] > '9')
+                        {
+                            printf("\n\n The integer number is not valid");
+                            DEBUG('a', "\n The integer number is not valid");
+                            machine->WriteRegister(2, 0);
+                            IncreasePC();
+                            delete buffer;
+                            return;
+                        }
+                        lastNumIndex = i;    
+                    }			
+                    
+                    // La so nguyen hop le, tien hanh chuyen chuoi ve so nguyen
+                    for(int i = firstNumIndex; i<= lastNumIndex; i++)
+                    {
+                        number = number * 10 + (int)(buffer[i] - 48); 
+                    }
+                    
+                    // neu la so am thi * -1;
+                    if(isNegative)
+                    {
+                        number = number * -1;
+                    }
+                    machine->WriteRegister(2, number);
+                    IncreasePC();
+                    delete buffer;
+                    return;	
+                }
+                case SC_PrintInt:
+                {
+                    int number = machine->ReadRegister(4);
+                    gSynchConsole->Write("The integer number you typed: ", strlen("The integer number you typed: ") + 1);
 		            if(number == 0)
                     {
                         gSynchConsole->Write("0", 1); // In ra man hinh so 0
@@ -283,8 +283,11 @@ void ExceptionHandler(ExceptionType which)
                         return;    
                     }
                     
-
-
+                    /*Qua trinh chuyen so thanh chuoi de in ra man hinh*/
+                    bool isNegative = false; // gia su la so duong
+                    int numberOfNum = 0; // Bien de luu so chu so cua number
+                    int firstNumIndex = 0; 
+			
                     if(number < 0)
                     {
                         isNegative = true;
@@ -292,15 +295,17 @@ void ExceptionHandler(ExceptionType which)
                         firstNumIndex = 1; 
                     } 	
                     
-
+                    int t_number = number; // bien tam cho number
                     while(t_number)
                     {
                         numberOfNum++;
                         t_number /= 10;
                     }
     
-		    // Tao buffer chuoi de in ra man hinh
-
+		            // Tao buffer chuoi de in ra man hinh
+                    char* buffer;
+                    int MAX_BUFFER = 255;
+                    buffer = new char[MAX_BUFFER + 1];
                     for(int i = firstNumIndex + numberOfNum - 1; i >= firstNumIndex; i--)
                     {
                         buffer[i] = (char)((number % 10) + 48);
@@ -311,40 +316,22 @@ void ExceptionHandler(ExceptionType which)
                         buffer[0] = '-';
 			            buffer[numberOfNum + 1] = 0;
                         gSynchConsole->Write(buffer, numberOfNum + 1);
-                                delete buffer;
-                                IncreasePC();
-                                return;
+                        delete buffer;
+                        IncreasePC();
+                        return;
                     }
-		            buffer[numberOfNum] = 0;
-                    char buffer2[255];
-                    sprintf(buffer2, "%d", number);	
-                    printf("\n\nSC_PrintInt Khong in ra so nguyen buffer 1\n\n");
-                    //gSynchConsole->Write(buffer, numberOfNum);
-                    gSynchConsole->Write(buffer2, numberOfNum);
-                    printf("\nSC_PrintInt in ra so nguyen buffer 2\n\n");
-
+		            buffer[numberOfNum] = 0;	
+                    gSynchConsole->Write(buffer, numberOfNum);
+                    printf("\n");
                     delete buffer;
                     IncreasePC();
-                    return;        		
-                    // int number = machine->ReadRegister(4);
-                
-                    // // If the number is 0, print "0" and return
-                    // if (number == 0) {
-                    //     gSynchConsole->Write("0", 1);
-                    //     IncreasePC();
-                    //     return;
-                    // }
-                    // char buffer[255];
-                    // sprintf(buffer, "%d", number);
-                    // gSynchConsole->Write(buffer, 2); // Write the string to console
-                    // IncreasePC();
-                    // return;
+                    return;      
                 }
                 case SC_ReadFloat:
                 {
                     const int MAX_BUFFER = 255;
                     char* buffer = new char[MAX_BUFFER]; // Allocate memory for input buffer
-
+                    gSynchConsole->Write("Type a float number: ", strlen("Type a float number: ") + 1);
                     int numBytes = gSynchConsole->Read(buffer, MAX_BUFFER); // Read input from console
 
                     float number = 0.0f; // Initialize variable to store the float
@@ -471,7 +458,9 @@ void ExceptionHandler(ExceptionType which)
                     buffer[index] = '\0';
                     
                     // Write the string to console
+                    gSynchConsole->Write("The float number you typed: ", strlen("The float number you typed: ") + 1);
                     gSynchConsole->Write(buffer, index);
+                    printf("\n");
                     IncreasePC();
                     return;
                 }
@@ -482,6 +471,7 @@ void ExceptionHandler(ExceptionType which)
 			        //Cong dung: Doc mot ky tu tu nguoi dung nhap
 			        int maxBytes = 255;
 			        char* buffer = new char[255];
+                    gSynchConsole->Write("Type a character: ", strlen("Type a character: ") + 1);
 			        int numBytes = gSynchConsole->Read(buffer, maxBytes);
         
 			        if(numBytes > 1) //Neu nhap nhieu hon 1 ky tu thi khong hop le
@@ -512,7 +502,9 @@ void ExceptionHandler(ExceptionType which)
                 {
                     char temp = (char)machine->ReadRegister(4);
 
+                    gSynchConsole->Write("The character you typed: ", strlen("The character you typed: ") + 1);
                     gSynchConsole->Write(&temp, 1);
+                    printf("\n");
                     break;
                 }
                 case SC_ReadString:
@@ -523,6 +515,7 @@ void ExceptionHandler(ExceptionType which)
                     length = machine->ReadRegister(5); // Read the maximum length of the input string from register 5
                     buffer = User2System(address, length); // Copy string from User Space to System Space
                     if (buffer != NULL) {
+                        gSynchConsole->Write("Type a string: ", strlen("Type a string: ") + 1);
                         gSynchConsole->Read(buffer, length); // Use SynchConsole's Read function to read the string
                         System2User(address, length, buffer); // Copy string from System Space to User Space
                         delete[] buffer; // Free allocated memory
@@ -539,7 +532,9 @@ void ExceptionHandler(ExceptionType which)
                     int length = 0;
                     while (*(buffer + length) != '\0') // Determine the actual length of the string
                         length++;
+                    gSynchConsole->Write("The string you typed: ", strlen("The string you typed: ") + 1);
                     gSynchConsole->Write(buffer, length + 1); // Use SynchConsole's Write function to print the string
+                    printf("\n");
                     delete[] buffer; // Free allocated memory
                     //IncreasePC(); // Increment Program Counter
                     //return;

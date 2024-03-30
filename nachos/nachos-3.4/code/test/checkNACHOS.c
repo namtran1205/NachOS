@@ -4,9 +4,9 @@
 int
 main()
 {
-    char a;
-    a = ReadChar();
-    PrintChar(a);
+    char* a;
+    ReadString(a, 255);
+    PrintString(a);
 
     Halt();
     return 0;
