@@ -4,9 +4,9 @@
 int
 main()
 {
-    char* a;
-    ReadString(a, 255);
-    PrintString(a);
+    char* filename;
+    ReadString(filename, 255);
+    Create(filename);
 
     Halt();
     return 0;

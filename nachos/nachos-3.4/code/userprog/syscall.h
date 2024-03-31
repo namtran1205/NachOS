@@ -162,7 +162,6 @@ void ReadString (char* buffer, int length);
 /* Write a string to console*/
 void PrintString (char* buffer);
 
-
 // int Sub(int a, int b);
 #endif /* IN_ASM */
 

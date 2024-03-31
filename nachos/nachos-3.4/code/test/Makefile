@@ -35,7 +35,7 @@ CPP = gcc -E
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
 
-all: halt shell matmult sort checkNACHOS help
+all: halt shell matmult sort checkNACHOS
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.c > strt.s
@@ -72,11 +72,11 @@ checkNACHOS: checkNACHOS.o start.o
 	$(LD) $(LDFLAGS) start.o checkNACHOS.o -o checkNACHOS.coff
 	../bin/coff2noff checkNACHOS.coff checkNACHOS
 
-help.o: help.c
-	$(CC) $(CFLAGS) -c help.c
-help: help.o start.o
-	$(LD) $(LDFLAGS) start.o help.o -o help.coff
-	../bin/coff2noff help.coff help
+# help.o: help.c
+# 	$(CC) $(CFLAGS) -c help.c
+# help: help.o start.o
+# 	$(LD) $(LDFLAGS) start.o help.o -o help.coff
+# 	../bin/coff2noff help.coff help
 
 # ascii.o: ascii.c
 # 	$(CC) $(CFLAGS) -c ascii.c
