@@ -44,6 +44,10 @@ int main()
     int isCreate = Create("ascii.txt");
     OpenFileID fileID = Open("ascii.txt", 0);
 
+
+    char asciiCharacter[] = " : \" \"\n";
+    char num[5];
+    
     // in cac ki tu ra man hinh
     // cac ki tu co the hien thi duoc co ma tu 32 den 126
     PrintString("Ascii  table:\n");
@@ -61,8 +65,7 @@ int main()
     if (isCreate || fileID < 0) return 0;
 
     Write("Ascii  table:\n", 15, fileID);
-    char asciiCharacter[] = " : \" \"\n";
-    char num[5];
+
     for(int i = 32; i < 127; i++)
     {
         filePrintInt(i, fileID);

@@ -3,8 +3,12 @@
 
 int main()
 {
+    OpenFileID dataFileID;
+    char contentBlock[100];
+    int realSize;
+    
     // mo file mota bang system call Open
-    OpenFileID dataFileID = Open("mota.txt", 1);
+    dataFileID = Open("mota.txt", 1);
 
     // Kiem tra co ton tai file mota(file chua du lieu can in)
     if (dataFileID == -1)
@@ -14,10 +18,9 @@ int main()
     }
 
     // doc tung khoi 99 ki tu
-    char* contentBlock = (char*) maloc(100 * sizeof(char));
     while (1)
     {
-        int realSize = read(contentBlock, 99, dataFileID);
+        realSize = read(contentBlock, 99, dataFileID);
         if (realSize > 0) 
         {
             PrintString(contentBlock);
@@ -27,8 +30,6 @@ int main()
     }
 
     if (dataFileID != -1) close(dataFileID);
-    free(contentBlock);
-
 
     return 0;
 }

@@ -1,41 +1,6 @@
 #include "syscall.h"
 #include "copyright.h"
 
-int int2char(int x, char str[])
-{
-    int startPoint = 0;
-    if (x < 0)
-    {
-        startPoint++;
-        x *= -1;
-    }
-
-    int pw = 1, cnt = 1;
-
-    // tinh so chu so cua so
-    while (x / pw > 9) 
-    {
-        pw *= 10;
-        cnt++;
-    }
-
-    for(int i = 0; i < cnt; i++)
-    {
-        str[startPoint + i] = x / pw + 48;
-        x %= pw;
-        pw /= 10;
-    }
-    if (startPoint) str[0] = '-';
-    str[cnt + startPoint] = '\0';
-    return cnt + startPoint;
-}
-
-void swap(int *a, int *b)
-{
-    int tmp = *a;
-    *a = *b;
-    *b = tmp;
-}
 
 void merge(int arr[], int begin, int mid, int end)
 {
@@ -89,7 +54,7 @@ void filePrintInt(int x, OpenFileID fileID)
 
 int main()
 {
-    int n, *arr = NULL;
+    int n, arr[100];
 
     PrintString("Nhap so phan tu cua mang:" );
 
@@ -102,25 +67,22 @@ int main()
         return 0;
     }
 
-    if (n > 0) arr = (int*) maloc(sizeof(int) * n);
-
     for(int i = 0; i < n; i++) 
     {
         PrintString("Nhap phan tu thu ");
         PrintInt(i);
         PrintChar(':');
-        arr[i] = readInt();
+        arr[i] = ReadInt();
     }
 
     mergeSort(arr, 0, n - 1);
 
-    Create("quicksort.txt");
-    int fileID = Open("quicksort.txt", 0);
+    Create("mergesort.txt");
+    int fileID = Open("mergesort.txt", 0);
 
     if (fileID == -1)
     {
         PrintString("Ghi ket qua that bai!\n");
-        if (n > 0) free(arr);
         return 0;      
     }
     // ghi ket qua sap xep vao quicksort.txt
@@ -135,6 +97,5 @@ int main()
         Write(" ", 1, fileID);
     }
 
-    if (n > 0) free(arr);
     return 0;
 }
