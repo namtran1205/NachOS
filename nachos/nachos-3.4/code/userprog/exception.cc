@@ -320,14 +320,15 @@ void ExceptionHandler(ExceptionType which)
                 }
                 case SC_ReadFloat:
                 {
-                    float* result =new float;
-                    char buffer[255];
+                    float *result;
+                    char buffer[255 + 2];
                     memset(buffer, 0, sizeof(buffer));
                     gSynchConsole->Write("Type a float number: ", strlen("Type a float number: ") + 1);
-                    int len = gSynchConsole->Read(buffer, 255);
+                    int len = gSynchConsole->Read(buffer, 255 + 1);
 
                     if (len != 0)
                     {
+                        bool isFloat = true;
                         bool isNegative = (buffer[0] == '-');
                         for (int i = isNegative; i < len; ++i)
                         {
@@ -336,32 +337,62 @@ void ExceptionHandler(ExceptionType which)
                             {
                                 DEBUG('a', "Expected float but %s found\n", buffer);
                                 gSynchConsole->Write("Expected float but ", strlen("Expected float but ") + 1);
-                                gSynchConsole->Write(buffer, len + 1);
+                                gSynchConsole->Write(buffer, strlen(buffer) + 1);
                                 gSynchConsole->Write(" found\n", strlen(" found\n") + 1);
-                                *result = 0.0f;
-                                IncreasePC();
-                                return;
+                                isFloat = false;
+                                break;
                             }
                         }
-                        *result = atof(buffer);
+
+                        result = new float;
+                        if (isFloat)
+                        {
+                            *result = atof(buffer);
+                        }
+                        else
+                        {
+                            *result = 0.0f;
+                        }
                     }
-                    printf("SC_ReadFloat: %f\n", *result);
+
                     machine->WriteRegister(2, (int)result);
                     IncreasePC();
                     return;
                 }
                 case SC_PrintFloat:
                 {
-                    printf("SC_PrintFloat in\n");
-                    float *number = (float *)machine->ReadRegister(4); // Read value of number PARAMETER from register 4
-                    // Round to 2 decimal places
-                    *number = (int)(*number);
+                    float* number = (float *)machine->ReadRegister(4); // Read value of number PARAMETER from register 4
                     char* buffer = new char[255];
-                    sprintf(buffer, "%d", *number);
-
+                    sprintf(buffer, "%f", *number);
                     gSynchConsole->Write("The float number you typed: ", strlen("The float number you typed: ") + 1);
                     gSynchConsole->Write(buffer, strlen(buffer) + 1); // Print number to console
                     printf("\n");
+                    IncreasePC();
+                    return;
+                }
+                case SC_FreeFloat:
+                {
+                    float *number = (float *)machine->ReadRegister(4);
+                    if (number)
+                    {
+                        delete number;
+                    }
+                    IncreasePC();
+                    return;
+                }
+                case SC_CompareFPs:
+                {
+                    // Get the values of two float pointers from registers to compare them
+                    float *f1 = (float *)machine->ReadRegister(4);
+                    float *f2 = (float *)machine->ReadRegister(5);
+                    int result;
+
+                    if      (*f1  < *f2) result = -1;
+                    else if (*f1 == *f2) result = 0;
+                    else if (*f1  > *f2) result = 1;
+
+                    // Write the comparing result into register 2 and increase program counter
+                    machine->WriteRegister(2, result);
                     IncreasePC();
                     return;
                 }

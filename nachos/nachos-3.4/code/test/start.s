@@ -159,11 +159,26 @@ PrintFloat:
 	addiu $2, $0, SC_PrintFloat
 	syscall
 	j	$31
-	.end PrintFloat 
+	.end PrintFloat
+
+	.globl FreeFloat
+	.ent FreeFloat
+FreeFloat:
+	addiu $2, $0, SC_FreeFloat
+	syscall
+	j	$31
+	.end FreeFloat
+
+	.globl CompareFPs
+	.ent CompareFPs
+CompareFPs:
+	addiu $2, $0, SC_CompareFPs
+	syscall
+	j	$31
+	.end CompareFPs
 
 	.globl ReadChar
 	.ent ReadChar
-	
 ReadChar:
 	addiu $2, $0, SC_ReadChar
 	syscall
