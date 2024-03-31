@@ -48,23 +48,6 @@
 //	are in machine.h.
 //----------------------------------------------------------------------
 
-// @brief Print buffer to console instantly
-/// @param buffer Buffer to print
-void SynchPrint(char *buffer)
-{
-    gSynchConsole->Write(buffer, strlen(buffer) + 1);
-    // gSynchConsole->Write("\n", 1);
-}
-
-/// @brief Print number to console instantly
-/// @param number Number to print
-void SynchPrint(int number)
-{
-    char buffer[255];
-    sprintf(buffer, "%d", number);
-    SynchPrint(buffer);
-}
-
 // Change the Program Counter register back by 4 bytes to continue fetching instructions
 void IncreasePC()
 {
@@ -200,82 +183,90 @@ void ExceptionHandler(ExceptionType which)
                         delete filename; 
                         return; 
                     } 
-                    IncreasePC();
                     machine->WriteRegister(2,0); // trả về cho chương trình  
                         // người dùng thành công 
+                    printf("Successfully created file\n");
                     delete filename; 
-
-                    interrupt->Halt();
-                    break; 
-    
-                }
-                /* 
-                case SC_Sub:
-                {                
                     IncreasePC();
-                    interrupt->Halt();
-                        break;
-                }*/
+                    return;
+                }
                 case SC_ReadInt:
                 {
-                    const int MAX_BUFFER = 255;
-                    char* buffer = new char[MAX_BUFFER]; // Allocate memory for input buffer
-                
-                    int numBytes = gSynchConsole->Read(buffer, MAX_BUFFER); // Read input from console
-                
-                    int number = 0; // Initialize variable to store the integer
-                    bool isNegative = false; // Flag to indicate if the number is negative
-                    int firstNumIndex = 0; // Index to start parsing the number
-                
-                    // Check if the number is negative
-                    if (buffer[0] == '-') {
-                        isNegative = true;
-                        firstNumIndex = 1;
-                    }
-                
-                    // Parse each character in the buffer to extract the integer
-                    for (int i = firstNumIndex; i < numBytes; i++) {
-                        // Check if the character is a digit
-                        if (buffer[i] < '0' || buffer[i] > '9') {
-                            // If the character is not a digit, print error message and return
-                            printf("\n\n The integer number is not valid.");
-                            DEBUG('a', "\n The integer number is not valid.");
-                            machine->WriteRegister(2, 0); // Return 0 in register 2
-                            IncreasePC();
-                            delete[] buffer; // Free allocated memory
-                            return;
-                        }
-                        // Convert character to integer and calculate the final number
-                        number = number * 10 + (int)(buffer[i] - '0');
-                    }
-                
-                    // Adjust the sign of the number if it is negative
-                    if (isNegative) {
-                        number *= -1;
-                    }
-                    printf("SC_ReadInt: %d \n", number);
-                    // Write the final number to register 2
-                    machine->WriteRegister(2, number);
-                    IncreasePC();
-                    delete[] buffer; // Free allocated memory
-                }
-                case SC_PrintInt:
-                {
-                    // Input: mot so integer
-                    // Output: khong co 
-                    // Chuc nang: In so nguyen len man hinh console
-                    int number = machine->ReadRegister(4);
-                    printf("SC_PrintInt: %d \n", number);
-                    SynchPrint("Input Parameter: ");
-                    SynchPrint(number);
                     char* buffer;
                     int MAX_BUFFER = 255;
                     buffer = new char[MAX_BUFFER + 1];
-                    int t_number = number; // bien tam cho number
-                    /*Qua trinh chuyen so thanh chuoi de in ra man hinh*/
-                    bool isNegative = false; // gia su la so duong
-                    int numberOfNum = 0; // Bien de luu so chu so cua number
-                    int firstNumIndex = 0; 
+                    gSynchConsole->Write("Type an integer number: ", strlen("Type an integer number: ") + 1);
+                    int numbytes = gSynchConsole->Read(buffer, MAX_BUFFER);// doc buffer toi da MAX_BUFFER ki tu, tra ve so ki tu doc dc
+                    int number = 0; // so luu ket qua tra ve cuoi cung
+						
+                    /* Qua trinh chuyen doi tu buffer sang so nguyen int */
+			
+                    // Xac dinh so am hay so duong                       
+                    bool isNegative = false; // Gia thiet la so duong.
+                    int firstNumIndex = 0;
+                    int lastNumIndex = 0;
+                    if(buffer[0] == '-')
+                    {
+                        isNegative = true;
+                        firstNumIndex = 1;
+                        lastNumIndex = 1;                        			   		
+                    }
+                    
+                    // Kiem tra tinh hop le cua so nguyen buffer
+                    for(int i = firstNumIndex; i < numbytes; i++)					
+                    {
+                        if(buffer[i] == '.') /// 125.0000000 van la so
+                        {
+                            int j = i + 1;
+                            for(; j < numbytes; j++)
+                            {
+				                // So khong hop le
+                                if(buffer[j] != '0')
+                                {
+                                    printf("\n\n The integer number is not valid");
+                                    DEBUG('a', "\n The integer number is not valid");
+                                    machine->WriteRegister(2, 0);
+                                    IncreasePC();
+                                    delete buffer;
+                                    return;
+                                }
+                            }
+                            // la so thoa cap nhat lastNumIndex
+                            lastNumIndex = i - 1;				
+                            break;                           
+                        }
+                        else if(buffer[i] < '0' && buffer[i] > '9')
+                        {
+                            printf("\n\n The integer number is not valid");
+                            DEBUG('a', "\n The integer number is not valid");
+                            machine->WriteRegister(2, 0);
+                            IncreasePC();
+                            delete buffer;
+                            return;
+                        }
+                        lastNumIndex = i;    
+                    }			
+                    
+                    // La so nguyen hop le, tien hanh chuyen chuoi ve so nguyen
+                    for(int i = firstNumIndex; i<= lastNumIndex; i++)
+                    {
+                        number = number * 10 + (int)(buffer[i] - 48); 
+                    }
+                    
+                    // neu la so am thi * -1;
+                    if(isNegative)
+                    {
+                        number = number * -1;
+                    }
+                    machine->WriteRegister(2, number);
+                    IncreasePC();
+                    delete buffer;
+                    return;	
+                }
+                case SC_PrintInt:
+                {
+                    int number = machine->ReadRegister(4);
+                    gSynchConsole->Write("The integer number you typed: ", strlen("The integer number you typed: ") + 1);
 		            if(number == 0)
                     {
                         gSynchConsole->Write("0", 1); // In ra man hinh so 0
@@ -283,8 +274,11 @@ void ExceptionHandler(ExceptionType which)
                         return;    
                     }
                     
-
-
+                    /*Qua trinh chuyen so thanh chuoi de in ra man hinh*/
+                    bool isNegative = false; // gia su la so duong
+                    int numberOfNum = 0; // Bien de luu so chu so cua number
+                    int firstNumIndex = 0; 
+			
                     if(number < 0)
                     {
                         isNegative = true;
@@ -292,15 +286,17 @@ void ExceptionHandler(ExceptionType which)
                         firstNumIndex = 1; 
                     } 	
                     
-
+                    int t_number = number; // bien tam cho number
                     while(t_number)
                     {
                         numberOfNum++;
                         t_number /= 10;
                     }
     
-		    // Tao buffer chuoi de in ra man hinh
-
+		            // Tao buffer chuoi de in ra man hinh
+                    char* buffer;
+                    int MAX_BUFFER = 255;
+                    buffer = new char[MAX_BUFFER + 1];
                     for(int i = firstNumIndex + numberOfNum - 1; i >= firstNumIndex; i--)
                     {
                         buffer[i] = (char)((number % 10) + 48);
@@ -311,167 +307,92 @@ void ExceptionHandler(ExceptionType which)
                         buffer[0] = '-';
 			            buffer[numberOfNum + 1] = 0;
                         gSynchConsole->Write(buffer, numberOfNum + 1);
-                                delete buffer;
-                                IncreasePC();
-                                return;
-                    }
-		            buffer[numberOfNum] = 0;
-                    char buffer2[255];
-                    sprintf(buffer2, "%d", number);	
-                    printf("\n\nSC_PrintInt Khong in ra so nguyen buffer 1\n\n");
-                    //gSynchConsole->Write(buffer, numberOfNum);
-                    gSynchConsole->Write(buffer2, numberOfNum);
-                    printf("\nSC_PrintInt in ra so nguyen buffer 2\n\n");
-
-                    delete buffer;
-                    IncreasePC();
-                    return;        		
-                    // int number = machine->ReadRegister(4);
-                
-                    // // If the number is 0, print "0" and return
-                    // if (number == 0) {
-                    //     gSynchConsole->Write("0", 1);
-                    //     IncreasePC();
-                    //     return;
-                    // }
-                    // char buffer[255];
-                    // sprintf(buffer, "%d", number);
-                    // gSynchConsole->Write(buffer, 2); // Write the string to console
-                    // IncreasePC();
-                    // return;
-                }
-                case SC_ReadFloat:
-                {
-                    const int MAX_BUFFER = 255;
-                    char* buffer = new char[MAX_BUFFER]; // Allocate memory for input buffer
-
-                    int numBytes = gSynchConsole->Read(buffer, MAX_BUFFER); // Read input from console
-
-                    float number = 0.0f; // Initialize variable to store the float
-                    bool isNegative = false; // Flag to indicate if the number is negative
-                    int firstNumIndex = 0; // Index to start parsing the number
-
-                    // Check if the number is negative
-                    if (buffer[0] == '-') {
-                        isNegative = true;
-                        firstNumIndex = 1;
-                    }
-
-                    // Flag to indicate if decimal point has been encountered
-                    bool decimalPointEncountered = false;
-                    int decimalPosition = -1; // Position of the decimal point
-
-                    // Parse each character in the buffer to extract the float
-                    for (int i = firstNumIndex; i < numBytes; i++) {
-                        // Check if the character is a digit
-                        if (buffer[i] >= '0' && buffer[i] <= '9') {
-                            // Convert character to float and calculate the final number
-                            number = number * 10.0f + (float)(buffer[i] - '0');
-
-                            // If decimal point has been encountered, adjust decimal position
-                            if (decimalPointEncountered) {
-                                decimalPosition++;
-                            }
-                        } else if (buffer[i] == '.' && !decimalPointEncountered) {
-                            // If decimal point encountered for the first time
-                            decimalPointEncountered = true;
-                            decimalPosition = 0;
-                        } else {
-                            // If non-digit character encountered (other than '-' or '.'), print error message and return
-                            printf("\n\n The floating point number is not valid.");
-                            DEBUG('a', "\n The floating point number is not valid.");
-                            machine->WriteRegister(2, 0); // Return 0 in register 2
-                            IncreasePC();
-                            delete[] buffer; // Free allocated memory
-                            return;
-                        }
-                    }
-
-                    // Adjust the sign of the number if it is negative
-                    if (isNegative) {
-                        number *= -1.0f;
-                    }
-
-                    // Adjust the number based on the position of the decimal point
-                    if (decimalPosition >= 0) {
-                        // Divide the number by 10^decimalPosition to adjust the decimal point
-                        float divisor = 1.0f;
-                        for (int i = 0; i < decimalPosition; i++) {
-                            divisor *= 10.0f;
-                        }
-                        number /= divisor;
-                    }
-
-                    // Write the final number to register 2
-                    machine->WriteRegister(2, *(int*)&number); // Store the float as an integer for simplicity
-                    IncreasePC();
-                    delete[] buffer; // Free allocated memory
-                    break;
-                }
-                case SC_PrintFloat:
-                {
-                    // Read the float to print from register 4
-                    int floatBits = machine->ReadRegister(4);
-                    
-                    // Convert the integer representation of the float back to a float
-                    float number = *(float*)&floatBits;
-                    
-                    // Check if the number is 0.0
-                    if (number == 0.0f) {
-                        gSynchConsole->Write("0.0", 3); // Print "0.0"
+                        delete buffer;
                         IncreasePC();
                         return;
                     }
-                    
-                    // Check if the number is negative
-                    bool isNegative = false;
-                    if (number < 0.0f) {
-                        isNegative = true;
-                        number *= -1.0f;
-                    }
-                    
-                    // Convert the float to string
-                    char buffer[64]; // Allocate buffer for string representation
-                    int index = 0;
-                    if (isNegative) {
-                        buffer[index++] = '-'; // Add negative sign if necessary
-                    }
-                    
-                    // Convert the integer part of the float to string
-                    int intPart = (int)number;
-                    if (intPart == 0) {
-                        buffer[index++] = '0'; // If integer part is 0, add '0' to string
-                    } else {
-                        // Convert each digit of the integer part to character and add to string
-                        int temp = intPart;
-                        while (temp > 0) {
-                            buffer[index++] = '0' + (temp % 10);
-                            temp /= 10;
+		            buffer[numberOfNum] = 0;	
+                    gSynchConsole->Write(buffer, numberOfNum);
+                    printf("\n");
+                    delete buffer;
+                    IncreasePC();
+                    return;      
+                }
+                case SC_ReadFloat:
+                {
+                    float *result;
+                    char buffer[255 + 2];
+                    memset(buffer, 0, sizeof(buffer));
+                    gSynchConsole->Write("Type a float number: ", strlen("Type a float number: ") + 1);
+                    int len = gSynchConsole->Read(buffer, 255 + 1);
+
+                    if (len != 0)
+                    {
+                        bool isFloat = true;
+                        bool isNegative = (buffer[0] == '-');
+                        for (int i = isNegative; i < len; ++i)
+                        {
+                            char c = buffer[i];
+                            if (c != '.' && (c < '0' || c > '9'))
+                            {
+                                DEBUG('a', "Expected float but %s found\n", buffer);
+                                gSynchConsole->Write("Expected float but ", strlen("Expected float but ") + 1);
+                                gSynchConsole->Write(buffer, strlen(buffer) + 1);
+                                gSynchConsole->Write(" found\n", strlen(" found\n") + 1);
+                                isFloat = false;
+                                break;
+                            }
+                        }
+
+                        result = new float;
+                        if (isFloat)
+                        {
+                            *result = atof(buffer);
+                        }
+                        else
+                        {
+                            *result = 0.0f;
                         }
                     }
-                    
-                    // Add decimal point to string
-                    buffer[index++] = '.';
-                    
-                    // Convert the fractional part of the float to string
-                    float fractionPart = number - (float)intPart;
-                    const int maxFractionDigits = 6; // Maximum number of fractional digits to display
-                    int numFractionDigits = 0; // Count of fractional digits
-                    
-                    // Loop to convert fractional part to string
-                    while (fractionPart > 0 && numFractionDigits < maxFractionDigits) {
-                        fractionPart *= 10;
-                        int digit = (int)fractionPart;
-                        buffer[index++] = '0' + digit;
-                        fractionPart -= (float)digit;
-                        numFractionDigits++;
+
+                    machine->WriteRegister(2, (int)result);
+                    IncreasePC();
+                    return;
+                }
+                case SC_PrintFloat:
+                {
+                    float* number = (float *)machine->ReadRegister(4); // Read value of number PARAMETER from register 4
+                    char* buffer = new char[255];
+                    sprintf(buffer, "%f", *number);
+                    gSynchConsole->Write("The float number you typed: ", strlen("The float number you typed: ") + 1);
+                    gSynchConsole->Write(buffer, strlen(buffer) + 1); // Print number to console
+                    printf("\n");
+                    IncreasePC();
+                    return;
+                }
+                case SC_FreeFloat:
+                {
+                    float *number = (float *)machine->ReadRegister(4);
+                    if (number)
+                    {
+                        delete number;
                     }
-                    
-                    // Null-terminate the string
-                    buffer[index] = '\0';
-                    
-                    // Write the string to console
-                    gSynchConsole->Write(buffer, index);
+                    IncreasePC();
+                    return;
+                }
+                case SC_CompareFPs:
+                {
+                    // Get the values of two float pointers from registers to compare them
+                    float *f1 = (float *)machine->ReadRegister(4);
+                    float *f2 = (float *)machine->ReadRegister(5);
+                    int result;
+
+                    if      (*f1  < *f2) result = -1;
+                    else if (*f1 == *f2) result = 0;
+                    else if (*f1  > *f2) result = 1;
+
+                    // Write the comparing result into register 2 and increase program counter
+                    machine->WriteRegister(2, result);
                     IncreasePC();
                     return;
                 }
@@ -482,6 +403,7 @@ void ExceptionHandler(ExceptionType which)
 			        //Cong dung: Doc mot ky tu tu nguoi dung nhap
 			        int maxBytes = 255;
 			        char* buffer = new char[255];
+                    gSynchConsole->Write("Type a character: ", strlen("Type a character: ") + 1);
 			        int numBytes = gSynchConsole->Read(buffer, maxBytes);
         
 			        if(numBytes > 1) //Neu nhap nhieu hon 1 ky tu thi khong hop le
@@ -504,16 +426,18 @@ void ExceptionHandler(ExceptionType which)
 			        }
         
 			        delete buffer;
-			        //IncreasePC(); // error system
-			        //return;
-			        break;
+                    IncreasePC();
+                    return;
                 }
                 case SC_PrintChar:
                 {
                     char temp = (char)machine->ReadRegister(4);
 
+                    gSynchConsole->Write("The character you typed: ", strlen("The character you typed: ") + 1);
                     gSynchConsole->Write(&temp, 1);
-                    break;
+                    printf("\n");
+                    IncreasePC();
+                    return;
                 }
                 case SC_ReadString:
                 {
@@ -523,13 +447,15 @@ void ExceptionHandler(ExceptionType which)
                     length = machine->ReadRegister(5); // Read the maximum length of the input string from register 5
                     buffer = User2System(address, length); // Copy string from User Space to System Space
                     if (buffer != NULL) {
+                        gSynchConsole->Write("Type a string: ", strlen("Type a string: ") + 1);
                         gSynchConsole->Read(buffer, length); // Use SynchConsole's Read function to read the string
                         System2User(address, length, buffer); // Copy string from System Space to User Space
                         delete[] buffer; // Free allocated memory
                     } else {
                         DEBUG('a', "\nError: Failed to allocate memory for buffer.");
                     }
-                    break;
+                    IncreasePC();
+                    return;
                 }
                 case SC_PrintString:
                 {
@@ -539,11 +465,12 @@ void ExceptionHandler(ExceptionType which)
                     int length = 0;
                     while (*(buffer + length) != '\0') // Determine the actual length of the string
                         length++;
+                    gSynchConsole->Write("The string you typed: ", strlen("The string you typed: ") + 1);
                     gSynchConsole->Write(buffer, length + 1); // Use SynchConsole's Write function to print the string
+                    printf("\n");
                     delete[] buffer; // Free allocated memory
-                    //IncreasePC(); // Increment Program Counter
-                    //return;
-                    break;
+                    IncreasePC();
+                    return;
                 }
                 case SC_Open:
                 {
@@ -578,7 +505,8 @@ void ExceptionHandler(ExceptionType which)
                     machine->WriteRegister(2, -1); //Khong mo duoc file return -1
                     
                     delete[] filename;
-                    break;
+                    IncreasePC();
+                    return;
                 }
                 case SC_Read:
                 {
@@ -720,7 +648,8 @@ void ExceptionHandler(ExceptionType which)
                         }
                     }
                     machine->WriteRegister(2, -1);
-                    break;
+                    IncreasePC();
+                    return;
                 }
                 default:
                     break;

@@ -71,3 +71,27 @@ checkNACHOS.o: checkNACHOS.c
 checkNACHOS: checkNACHOS.o start.o
 	$(LD) $(LDFLAGS) start.o checkNACHOS.o -o checkNACHOS.coff
 	../bin/coff2noff checkNACHOS.coff checkNACHOS
+
+# help.o: help.c
+# 	$(CC) $(CFLAGS) -c help.c
+# help: help.o start.o
+# 	$(LD) $(LDFLAGS) start.o help.o -o help.coff
+# 	../bin/coff2noff help.coff help
+
+# ascii.o: ascii.c
+# 	$(CC) $(CFLAGS) -c ascii.c
+# ascii: ascii.o start.o
+# 	$(LD) $(LDFLAGS) start.o ascii.o -o ascii.coff
+# 	../bin/coff2noff ascii.coff ascii
+
+# quicksort.o: quicksort.c
+# 	$(CC) $(CFLAGS) -c quicksort.c
+# quicksort: quicksort.o start.o
+# 	$(LD) $(LDFLAGS) start.o quicksort.o -o quicksort.coff
+# 	../bin/coff2noff quicksort.coff quicksort
+
+# mergesort.o: mergesort.c
+# 	$(CC) $(CFLAGS) -c mergesort.c
+# mergesort: mergesort.o start.o
+# 	$(LD) $(LDFLAGS) start.o mergesort.o -o mergesort.coff
+# 	../bin/coff2noff mergesort.coff mergesort

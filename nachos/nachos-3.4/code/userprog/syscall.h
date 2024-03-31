@@ -34,10 +34,12 @@
 #define SC_PrintInt	    12
 #define SC_ReadFloat    13
 #define SC_PrintFloat   14
-#define SC_ReadChar 	15
-#define SC_PrintChar    16
-#define SC_ReadString   17
-#define SC_PrintString  18
+#define SC_FreeFloat    15
+#define SC_CompareFPs   16
+#define SC_ReadChar 	17
+#define SC_PrintChar    18
+#define SC_ReadString   19
+#define SC_PrintString  20
 
 #ifndef IN_ASM
 
@@ -142,10 +144,20 @@ void PrintInt(int number);
 /* Read a float number input by user from console 
  * If not a float number, return zero (0.0).
  */
-float ReadFloat();
+float* ReadFloat();
 
 /* Write a float number console */
-void PrintFloat(float number);
+void PrintFloat(float* number);
+
+/* Free allocated memory for float pointer*/
+void FreeFloat(float* value);
+
+/* Compare the values of two float pointers f1, f2
+ * -1: f1 < f2
+ *  0: f1 = f2
+ *  1: f1 > f2
+ */
+int CompareFPs(float* f1, float* f2);
 
 /* Read a character input by user from console */
 char ReadChar();
