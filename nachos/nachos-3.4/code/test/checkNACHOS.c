@@ -4,16 +4,11 @@
 int
 main()
 {
-    PrintString("Ascii  table:\n");
-    for(i = 32; i < 127; i++)
-    {
-        PrintInt(i);
-        PrintString(" : \"");
-        PrintChar(i);
-        PrintChar('\"\n');
-    }
-    Halt();
-    return 0;
+    OpenFileID id;
+    id = Open("mergesort.txt", 0);
+    Write("Hello World", 11, id);
+    Close(id);
 
-    
+    Halt();
+    return 0;    
 }

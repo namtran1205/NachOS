@@ -143,8 +143,8 @@ void ExceptionHandler(ExceptionType which)
             switch(type)
             {
                 case SC_Halt:
-                    DEBUG('a', "Shutdown, initiated by user program.\n");
-                    interrupt->Halt();
+	    			DEBUG('a', "Shutdown, initiated by user program.\n");
+	    			interrupt->Halt();
                     break;
                 case SC_Create: 
                 {
@@ -195,7 +195,7 @@ void ExceptionHandler(ExceptionType which)
                     char* buffer;
                     int MAX_BUFFER = 255;
                     buffer = new char[MAX_BUFFER + 1];
-                    gSynchConsole->Write("Type an integer number: ", strlen("Type an integer number: ") + 1);
+                    //gSynchConsole->Write("Type an integer number: ", strlen("Type an integer number: ") + 1);
                     int numbytes = gSynchConsole->Read(buffer, MAX_BUFFER);// doc buffer toi da MAX_BUFFER ki tu, tra ve so ki tu doc dc
                     int number = 0; // so luu ket qua tra ve cuoi cung
 						
@@ -266,8 +266,8 @@ void ExceptionHandler(ExceptionType which)
                 case SC_PrintInt:
                 {
                     int number = machine->ReadRegister(4);
-                    gSynchConsole->Write("The integer number you typed: ", strlen("The integer number you typed: ") + 1);
-                    if(number == 0)
+                    //gSynchConsole->Write("The integer number you typed: ", strlen("The integer number you typed: ") + 1);
+		            if(number == 0)
                     {
                         gSynchConsole->Write("0", 1); // In ra man hinh so 0
                         IncreasePC();
@@ -313,7 +313,6 @@ void ExceptionHandler(ExceptionType which)
                     }
 		            buffer[numberOfNum] = 0;	
                     gSynchConsole->Write(buffer, numberOfNum);
-                    printf("\n");
                     delete buffer;
                     IncreasePC();
                     return;      
@@ -323,7 +322,7 @@ void ExceptionHandler(ExceptionType which)
                     float *result;
                     char buffer[255 + 2];
                     memset(buffer, 0, sizeof(buffer));
-                    gSynchConsole->Write("Type a float number: ", strlen("Type a float number: ") + 1);
+                    //gSynchConsole->Write("Type a float number: ", strlen("Type a float number: ") + 1);
                     int len = gSynchConsole->Read(buffer, 255 + 1);
 
                     if (len != 0)
@@ -364,9 +363,8 @@ void ExceptionHandler(ExceptionType which)
                     float* number = (float *)machine->ReadRegister(4); // Read value of number PARAMETER from register 4
                     char* buffer = new char[255];
                     sprintf(buffer, "%f", *number);
-                    gSynchConsole->Write("The float number you typed: ", strlen("The float number you typed: ") + 1);
+                    //gSynchConsole->Write("The float number you typed: ", strlen("The float number you typed: ") + 1);
                     gSynchConsole->Write(buffer, strlen(buffer) + 1); // Print number to console
-                    printf("\n");
                     IncreasePC();
                     return;
                 }
@@ -403,7 +401,7 @@ void ExceptionHandler(ExceptionType which)
 			        //Cong dung: Doc mot ky tu tu nguoi dung nhap
 			        int maxBytes = 255;
 			        char* buffer = new char[255];
-                    gSynchConsole->Write("Type a character: ", strlen("Type a character: ") + 1);
+                    //gSynchConsole->Write("Type a character: ", strlen("Type a character: ") + 1);
 			        int numBytes = gSynchConsole->Read(buffer, maxBytes);
         
 			        if(numBytes > 1) //Neu nhap nhieu hon 1 ky tu thi khong hop le
@@ -433,9 +431,8 @@ void ExceptionHandler(ExceptionType which)
                 {
                     char temp = (char)machine->ReadRegister(4);
 
-                    gSynchConsole->Write("The character you typed: ", strlen("The character you typed: ") + 1);
+                    //gSynchConsole->Write("The character you typed: ", strlen("The character you typed: ") + 1);
                     gSynchConsole->Write(&temp, 1);
-                    printf("\n");
                     IncreasePC();
                     return;
                 }
@@ -447,7 +444,7 @@ void ExceptionHandler(ExceptionType which)
                     length = machine->ReadRegister(5); // Read the maximum length of the input string from register 5
                     buffer = User2System(address, length); // Copy string from User Space to System Space
                     if (buffer != NULL) {
-                        gSynchConsole->Write("Type a string: ", strlen("Type a string: ") + 1);
+                        //gSynchConsole->Write("Type a string: ", strlen("Type a string: ") + 1);
                         gSynchConsole->Read(buffer, length); // Use SynchConsole's Read function to read the string
                         System2User(address, length, buffer); // Copy string from System Space to User Space
                         delete[] buffer; // Free allocated memory
@@ -465,16 +462,14 @@ void ExceptionHandler(ExceptionType which)
                     int length = 0;
                     while (*(buffer + length) != '\0') // Determine the actual length of the string
                         length++;
-                    gSynchConsole->Write("The string you typed: ", strlen("The string you typed: ") + 1);
+                    //gSynchConsole->Write("The string you typed: ", strlen("The string you typed: ") + 1);
                     gSynchConsole->Write(buffer, length + 1); // Use SynchConsole's Write function to print the string
-                    printf("\n");
                     delete[] buffer; // Free allocated memory
                     IncreasePC();
                     return;
                 }
                 case SC_Open:
                 {
-                    gSynchConsole->Write("SC_Open In 1\n", strlen("SC_Open In 1\n") + 1);
                     int address = machine->ReadRegister(4); // Lay dia chi cua tham so name tu thanh ghi so 4
                     int type = machine->ReadRegister(5); // Lay tham so type tu thanh ghi so 5
                     char* filename;
@@ -490,7 +485,6 @@ void ExceptionHandler(ExceptionType which)
                             if ((fileSystem->openf[freeSlot] = fileSystem->Open(filename, type)) != NULL) //Mo file thanh cong
                             {
                                 machine->WriteRegister(2, freeSlot); //tra ve OpenFileID
-                                gSynchConsole->Write("SC_Open In 2\n", strlen("SC_Open In 2\n") + 1);
                             }
                         }
                         else if (type == 2) // xu li stdin voi type quy uoc la 2
@@ -506,8 +500,6 @@ void ExceptionHandler(ExceptionType which)
                         return;
                     }
                     machine->WriteRegister(2, -1); //Khong mo duoc file return -1
-                    gSynchConsole->Write("Can not open file ", strlen("Can not open file ") + 1);
-                    printf("\n");
                     
                     delete[] filename;
                     IncreasePC();
@@ -822,19 +814,6 @@ void ExceptionHandler(ExceptionType which)
                     }
                     machine->WriteRegister(2, -1);
                     delete buffer;
-                    IncreasePC();
-                    return;
-                }
-                case SC_ReadString1:
-                {
-                    char* buffer = machine->ReadRegister(4);
-                    char* str = machine->ReadRegister(5);
-
-                    for (int i = 0; i < strlen(str); i++)
-                    {
-                        buffer[i] = (char)str[i];
-                    }
-                    gSynchConsole->Read(buffer, strlen(buffer) + 1); // Su dung ham Read cua lop Syn
                     IncreasePC();
                     return;
                 }

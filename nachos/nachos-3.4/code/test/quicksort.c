@@ -1,12 +1,14 @@
 #include "syscall.h"
 #include "copyright.h"
+int arr[100];
+int st[300];
 
 int main()
 {
     int swapTmp;
     int i, j;  
-    int n, arr[100];
-    int st[300], stEnd;
+    int n;
+    int stEnd;
     OpenFileID fileID;   
 
 
@@ -43,6 +45,7 @@ int main()
 
         // doc phan tu i
         arr[i] = ReadInt();
+
     }
     // ==========================================================
     //                        quicksort
@@ -131,7 +134,7 @@ int main()
     Write("\n", 1, fileID);
     for(i = 0; i < n; i++)
     {
-        WriteInt(n, fileID);
+        WriteInt(arr[i], fileID);
         Write(" ", 1, fileID);
     }
 

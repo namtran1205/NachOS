@@ -1,25 +1,30 @@
 #include "syscall.h"
 #include "copyright.h"
 
+float* arr[10];
+float* leftArr[6];
+float* rightArr[6];
+int st[25];
+
 int main()
 {
     int swapTmp;
     int i;  
     int n;
-    float* arr[100];
-    int st[400], stEnd;
+    int stEnd;
     OpenFileID fileID; 
 
 
     int begin, end, mid;
-    int itL, leftSize, itR, rightSize;
-    float* leftArr[100], *rightArr[100];
+    int itL;
+    int leftSize;
+    int itR;
+    int rightSize;
     // ==========================================================
     //                        nhap du lieu
     // ==========================================================
 
     PrintString("Nhap so phan tu cua mang:" );
-
     // kiem tra so phan tu co hop le khong
     n = ReadInt();
     if (n < 0) 
@@ -31,7 +36,6 @@ int main()
     for(i = 0; i < n; i++) 
     {
         // bao hieu nguoi dung nhap phan tu i
-        PrintString("Nhap phan tu thu ");
         PrintInt(i);
         PrintChar(':');
         arr[i] = ReadFloat();
@@ -118,18 +122,20 @@ int main()
 
 
 
+
     // ==========================================================
     //                  xuat du lieu sang file
     // ==========================================================
 
     Create("mergesort.txt");
     fileID = Open("mergesort.txt", 0);
-
     if (fileID == -1)
     {
         PrintString("Ghi ket qua that bai!\n");
+        Halt();
         return 0;      
     }
+    
     // ghi ket qua sap xep vao quicksort.txt
     // cau truc:
     // dong 1: n
@@ -142,7 +148,10 @@ int main()
         Write(" ", 1, fileID);
     }
 
+
     for(i = 0; i < n; i++) FreeFloat(arr[i]);
+    
+    Halt();
 
     return 0;
 }

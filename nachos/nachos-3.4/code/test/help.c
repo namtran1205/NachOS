@@ -4,7 +4,7 @@
 int main()
 {
     OpenFileID dataFileID;
-    char contentBlock[100];
+    char contentBlock[300];
     int realSize;
     
     // mo file mota bang system call Open
@@ -20,13 +20,13 @@ int main()
     // doc tung khoi 99 ki tu
     while (1)
     {
-        realSize = Read(contentBlock, 99, dataFileID);
+        realSize = Read(contentBlock, 299, dataFileID);
         if (realSize > 0) 
         {
             PrintString(contentBlock);
             contentBlock[realSize] = '\0';
         }
-        if (realSize < 99) break;
+        if (realSize < 299) break;
     }
 
     if (dataFileID != -1) Close(dataFileID);
