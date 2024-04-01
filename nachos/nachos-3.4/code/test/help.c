@@ -20,7 +20,7 @@ int main()
     // doc tung khoi 99 ki tu
     while (1)
     {
-        realSize = read(contentBlock, 99, dataFileID);
+        realSize = Read(contentBlock, 99, dataFileID);
         if (realSize > 0) 
         {
             PrintString(contentBlock);
@@ -29,7 +29,7 @@ int main()
         if (realSize < 99) break;
     }
 
-    if (dataFileID != -1) close(dataFileID);
+    if (dataFileID != -1) Close(dataFileID);
 
     return 0;
 }

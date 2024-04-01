@@ -35,7 +35,7 @@ CPP = gcc -E
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
 
-all: halt shell matmult sort checkNACHOS
+all: halt shell matmult sort checkNACHOS help ascii
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.c > strt.s
@@ -72,17 +72,17 @@ checkNACHOS: checkNACHOS.o start.o
 	$(LD) $(LDFLAGS) start.o checkNACHOS.o -o checkNACHOS.coff
 	../bin/coff2noff checkNACHOS.coff checkNACHOS
 
-# help.o: help.c
-# 	$(CC) $(CFLAGS) -c help.c
-# help: help.o start.o
-# 	$(LD) $(LDFLAGS) start.o help.o -o help.coff
-# 	../bin/coff2noff help.coff help
+help.o: help.c
+	$(CC) $(CFLAGS) -c help.c
+help: help.o start.o
+	$(LD) $(LDFLAGS) start.o help.o -o help.coff
+	../bin/coff2noff help.coff help
 
-# ascii.o: ascii.c
-# 	$(CC) $(CFLAGS) -c ascii.c
-# ascii: ascii.o start.o
-# 	$(LD) $(LDFLAGS) start.o ascii.o -o ascii.coff
-# 	../bin/coff2noff ascii.coff ascii
+ascii.o: ascii.c
+	$(CC) $(CFLAGS) -c ascii.c
+ascii: ascii.o start.o
+	$(LD) $(LDFLAGS) start.o ascii.o -o ascii.coff
+	../bin/coff2noff ascii.coff ascii
 
 # quicksort.o: quicksort.c
 # 	$(CC) $(CFLAGS) -c quicksort.c
