@@ -40,6 +40,8 @@
 #define SC_PrintChar    18
 #define SC_ReadString   19
 #define SC_PrintString  20
+#define SC_WriteInt     21
+#define SC_WriteFloat   22
 
 #ifndef IN_ASM
 
@@ -115,6 +117,7 @@ void Write(char *buffer, int size, OpenFileID id);
  * you should always wait until you can return at least one character).
  */
 int Read(char *buffer, int size, OpenFileID id);
+
 /* Close the file, we're done reading and writing to it. */
 void Close(OpenFileID id);
 
@@ -173,6 +176,17 @@ void ReadString (char* buffer, int length);
 
 /* Write a string to console*/
 void PrintString (char* buffer);
+
+
+/* Write a int number into the file 
+ * return value is -1 for fail 
+ *                  0 for success */
+int WriteInt(int number, OpenFileID id);
+
+/* Write a float number into the file 
+ * return value is -1 for fail 
+ *                  0 for success */
+int WriteFloat(float* number, OpenFileID id);
 
 
 // int Sub(int a, int b);

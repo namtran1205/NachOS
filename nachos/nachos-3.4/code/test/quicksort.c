@@ -1,47 +1,6 @@
 #include "syscall.h"
 #include "copyright.h"
 
-int int2char(int x, char str[])
-{
-    int startPoint = 0;
-    if (x < 0)
-    {
-        startPoint++;
-        x *= -1;
-    }
-
-    int pw = 1, cnt = 1;
-
-    // tinh so chu so cua so
-    while (x / pw > 9) 
-    {
-        pw *= 10;
-        cnt++;
-    }
-
-    for(int i = 0; i < cnt; i++)
-    {
-        str[startPoint + i] = x / pw + 48;
-        x %= pw;
-        pw /= 10;
-    }
-    if (startPoint) str[0] = '-';
-    str[cnt + startPoint] = '\0';
-    return cnt + startPoint;
-}
-
-
-// y tuong:
-// chuyen so dang int thanh chuoi char(qua ham int2char)
-// ghi vao file bang ham ghi chuoi Write(buffer, size, fileID)
-void filePrintInt(int x, OpenFileID fileID)
-{
-    char *num = (char*) maloc(sizeof(char) * 20);
-    int len = int2char(x, num);
-    Write(num, len, fileID);
-    free(num);
-}
-
 int main()
 {
     int swapTmp;
@@ -89,12 +48,13 @@ int main()
     //                        quicksort
     // ==========================================================
 
-    st[0] = 0; st[1] = n - 1;
+
+    st[0] = 0; st[1] = n - 1; // tao du lieu cho lan chay dau tien
     stEnd = 2;
-    while (stEnd != 0)
+    while (stEnd > 0)
     {
-        start = st[0];
-        end = st[1];
+        start = st[stEnd - 2];
+        end = st[stEnd - 1];
         stEnd = stEnd - 2;
 
         if (start >= end) continue;
@@ -153,27 +113,27 @@ int main()
 
 
     // tao va mo file quicksort.txt
-    // Create("quicksort.txt");
-    // fileID = Open("quicksort.txt", 0);
+    Create("quicksort.txt");
+    fileID = Open("quicksort.txt", 0);
 
-    // if (fileID == -1)
-    // {
-    //     PrintString("Ghi ket qua that bai!\n");
-    //     return 0;      
-    // }
+    if (fileID == -1)
+    {
+        PrintString("Ghi ket qua that bai!\n");
+        return 0;      
+    }
 
 
-    // // ghi ket qua sap xep vao quicksort.txt
-    // // cau truc:
-    // // dong 1: n
-    // // dong 2: arr[0] arr[1] ... arr[n - 1]
-    // WriteInt(n, fileID);
-    // Write("\n", 1, fileID);
-    // for(int i = 0; i < n; i++)
-    // {
-    //     WriteInt(n, fileID);
-    //     Write(" ", 1, fileID);
-    // }
+    // ghi ket qua sap xep vao quicksort.txt
+    // cau truc:
+    // dong 1: n
+    // dong 2: arr[0] arr[1] ... arr[n - 1]
+    WriteInt(n, fileID);
+    Write("\n", 1, fileID);
+    for(int i = 0; i < n; i++)
+    {
+        WriteInt(n, fileID);
+        Write(" ", 1, fileID);
+    }
 
     return 0;
 }

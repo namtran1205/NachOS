@@ -47,11 +47,12 @@ int main()
 
     char asciiCharacter[] = " : \" \"\n";
     char num[5];
-    
+
+    int i;
     // in cac ki tu ra man hinh
     // cac ki tu co the hien thi duoc co ma tu 32 den 126
     PrintString("Ascii  table:\n");
-    for(int i = 32; i < 127; i++)
+    for(i = 32; i < 127; i++)
     {
         PrintInt(i);
         PrintString(" : \"");
@@ -66,7 +67,7 @@ int main()
 
     Write("Ascii  table:\n", 15, fileID);
 
-    for(int i = 32; i < 127; i++)
+    for(i = 32; i < 127; i++)
     {
         filePrintInt(i, fileID);
         Write(asciiCharacter, 7, fileID);

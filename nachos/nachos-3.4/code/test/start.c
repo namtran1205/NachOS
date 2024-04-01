@@ -211,6 +211,23 @@ PrintString:
 	j	$31
 	.end PrintString
 
+	.globl WriteInt
+	.ent WriteInt
+
+WriteInt:
+	addiu $2, $0, SC_WriteInt
+	syscall
+	j	$31
+	.end WriteInt
+
+	.globl WriteFloat
+	.ent WriteFloat
+
+WriteFloat:
+	addiu $2, $0, SC_WriteFloat
+	syscall
+	j	$31
+	.end WriteFloat
 
 /* dummy function to keep gcc happy */
         .globl  __main

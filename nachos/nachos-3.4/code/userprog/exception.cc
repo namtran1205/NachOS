@@ -143,8 +143,8 @@ void ExceptionHandler(ExceptionType which)
             switch(type)
             {
                 case SC_Halt:
-	    			DEBUG('a', "Shutdown, initiated by user program.\n");
-	    			interrupt->Halt();
+                    DEBUG('a', "Shutdown, initiated by user program.\n");
+                    interrupt->Halt();
                     break;
                 case SC_Create: 
                 {
@@ -267,7 +267,7 @@ void ExceptionHandler(ExceptionType which)
                 {
                     int number = machine->ReadRegister(4);
                     gSynchConsole->Write("The integer number you typed: ", strlen("The integer number you typed: ") + 1);
-		            if(number == 0)
+                    if(number == 0)
                     {
                         gSynchConsole->Write("0", 1); // In ra man hinh so 0
                         IncreasePC();
@@ -648,6 +648,175 @@ void ExceptionHandler(ExceptionType which)
                         }
                     }
                     machine->WriteRegister(2, -1);
+                    IncreasePC();
+                    return;
+                }
+                case SC_WriteInt:
+                {
+                    int number = machine->ReadRegister(4);    // Lay gia tri can ghi(tham so number) tu thanh ghi so 4
+                    OpenFileID id = machine->ReadRegister(5); // Lay id cua file tu thanh ghi so 5
+                    int OldPos;
+                    int NewPos;
+
+
+                    char *buffer;
+                    int startPoint = 0; // Vi tri bat dau cua day so
+                    int numberOfNum = 1; // Bien de luu so chu so cua number
+                    int pw = 1; // so lon nhat ma number chia lay nguyen > 0 
+                    int MAX_BUFFER = 255;
+                    buffer = new char[MAX_BUFFER + 1];
+
+
+                    // Kiem tra id cua file truyen vao co nam ngoai bang mo ta file khong
+                    if (id < 0 || id > 14)
+                    {
+                        printf("\nCannot writing.");
+                        machine->WriteRegister(2, -1);
+                        IncreasePC();
+                        return;
+                    }
+                    // Kiem tra file co ton tai khong
+                    if (fileSystem->openf[id] == NULL)
+                    {
+                        printf("\nCannot write.");
+                        machine->WriteRegister(2, -1);
+                        IncreasePC();
+                        return;
+                    }
+                    // Xet truong hop ghi file only read (type quy uoc la 1) hoac file stdin (type quy uoc la 2) thi tra ve -1
+                    if (fileSystem->openf[id]->type == 1 || fileSystem->openf[id]->type == 2)
+                    {
+                        printf("\nCannot write.");
+                        machine->WriteRegister(2, -1);
+                        IncreasePC();
+                        return;
+                    }
+                    
+
+                    if(number < 0)
+                    {
+                        startPoint = 1;       // dich vi tri bat dau len 1 de ghi '-' vao vi tri 0
+                        number = number * -1; // Nham chuyen so am thanh so duong de tinh so chu so
+                    } 	
+                    
+                    while(number % pw != 0)
+                    {
+                        numberOfNum++;
+                        pw *= 10;
+                    }
+    
+		            // Tao buffer chuoi de in ra man hinh
+
+                    for(int offset = 0; offset < numberOfNum; offset++)
+                    {
+                        buffer[startPoint + offset] = (char)((number / pw) + 48);
+                        number %= pw;
+                        pw /= pw;
+                    }
+                    if(startPoint > 0) buffer[0] = '-';
+                    buffer[startPoint + numberOfNum] = '\0';
+
+
+                    
+                    OldPos = fileSystem->openf[id]->GetCurrentPos(); // Kiem tra thanh cong thi lay vi tri OldPos
+                    // Xet truong hop ghi file read & write (type quy uoc la 0) thi tra ve so byte thuc su
+                    if (fileSystem->openf[id]->type == 0)
+                    {
+                        if ((fileSystem->openf[id]->Write(buffer, startPoint + numberOfNum)) > 0)
+                        {
+                            // So byte thuc su = NewPos - OldPos
+                            NewPos = fileSystem->openf[id]->GetCurrentPos();
+                            if (startPoint + numberOfNum > NewPos - OldPos)
+                                machine->WriteRegister(2, -1);
+                            else 
+                                machine->WriteRegister(2, 0);
+                            delete buffer;
+                            IncreasePC();
+                            return;
+                        }
+                    }
+                    if (fileSystem->openf[id]->type == 3) // Xet truong hop con lai ghi file stdout (type quy uoc la 3)
+                    {
+                        gSynchConsole->Write(buffer, startPoint + numberOfNum); // Su dung ham Write cua lop SynchConsole 
+                        machine->WriteRegister(2, 0); 
+                        delete buffer;
+                        IncreasePC();
+                        return;
+                    }
+                    machine->WriteRegister(2, -1);
+                    delete buffer;
+                    IncreasePC();
+                    return;
+                }
+                case SC_WriteFloat:
+                {
+                    float* number = (float*)machine->ReadRegister(4);
+                    OpenFileID id = machine->ReadRegister(5); // Lay id cua file tu thanh ghi so 5
+                    int OldPos;
+                    int NewPos;
+
+
+                    char* buffer = new char[255];
+                    sprintf(buffer, "%f", *number);
+
+
+                    // Kiem tra id cua file truyen vao co nam ngoai bang mo ta file khong
+                    if (id < 0 || id > 14)
+                    {
+                        printf("\nCannot writing.");
+                        machine->WriteRegister(2, -1);
+                        IncreasePC();
+                        return;
+                    }
+                    // Kiem tra file co ton tai khong
+                    if (fileSystem->openf[id] == NULL)
+                    {
+                        printf("\nCannot write.");
+                        machine->WriteRegister(2, -1);
+                        IncreasePC();
+                        return;
+                    }
+                    // Xet truong hop ghi file only read (type quy uoc la 1) hoac file stdin (type quy uoc la 2) thi tra ve -1
+                    if (fileSystem->openf[id]->type == 1 || fileSystem->openf[id]->type == 2)
+                    {
+                        printf("\nCannot write.");
+                        machine->WriteRegister(2, -1);
+                        IncreasePC();
+                        return;
+                    }
+                    
+
+
+
+
+                    
+                    OldPos = fileSystem->openf[id]->GetCurrentPos(); // Kiem tra thanh cong thi lay vi tri OldPos
+                    // Xet truong hop ghi file read & write (type quy uoc la 0) thi tra ve so byte thuc su
+                    if (fileSystem->openf[id]->type == 0)
+                    {
+                        if ((fileSystem->openf[id]->Write(buffer, strlen(buffer))) > 0)
+                        {
+                            // So byte thuc su = NewPos - OldPos
+                            NewPos = fileSystem->openf[id]->GetCurrentPos();
+                            if (strlen(buffer) > NewPos - OldPos)
+                                machine->WriteRegister(2, -1);
+                            else 
+                                machine->WriteRegister(2, 0);
+                            delete buffer;
+                            IncreasePC();
+                            return;
+                        }
+                    }
+                    if (fileSystem->openf[id]->type == 3) // Xet truong hop con lai ghi file stdout (type quy uoc la 3)
+                    {
+                        gSynchConsole->Write(buffer, strlen(buffer)); // Su dung ham Write cua lop SynchConsole 
+                        machine->WriteRegister(2, 0); 
+                        delete buffer;
+                        IncreasePC();
+                        return;
+                    }
+                    machine->WriteRegister(2, -1);
+                    delete buffer;
                     IncreasePC();
                     return;
                 }

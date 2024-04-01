@@ -1,63 +1,24 @@
 #include "syscall.h"
 #include "copyright.h"
 
-
-void merge(int arr[], int begin, int mid, int end)
-{
-    int leftSize = mid - begin + 1;
-    int rightSize = end - mid;
-    int *leftArr = (int*) maloc(sizeof(int) * leftSize);
-    int *rightArr = (int*) maloc(sizeof(int) * rightSize);
-
-    for(int i = 0; i < leftSize; i++) leftArr[i] = arr[begin + i];
-    for(int i = 0; i < rightSize; i++) rightArr[i] = arr[mid + 1 + i];
-
-    int itL = 0, itR = 0;
-    while (itL < leftSize && itR < rightSize)
-    {
-        if (leftArr[itL] <= rightArr[itR]) 
-        {
-            arr[begin + itL + itR] = leftArr[itL];
-            itL++;
-        }
-        else 
-        {
-            arr[begin + itL + itR] = leftArr[itR];
-            itR++;
-        }
-    }
-
-    while (itR < rightSize) arr[begin + itL + itR] = leftArr[itR++];
-    while (itL < leftSize) arr[begin + itL + itR] = leftArr[itL++];
-}
-
-void mergeSort(int arr[], int begin, int end)
-{
-    if (begin >= end) return;
-    int mid = (begin + end) >> 1;
-    mergeSort(arr, begin, mid);
-    mergeSort(arr, mid + 1, end);
-    merge(arr, begin, mid, end);
-}
-
-
-// y tuong:
-// chuyen so dang int thanh chuoi char(qua ham int2char)
-// ghi vao file bang ham ghi chuoi Write(buffer, size, fileID)
-void filePrintInt(int x, OpenFileID fileID)
-{
-    char *num = (char*) maloc(sizeof(char) * 20);
-    int len = int2char(x, num);
-    Write(num, len, fileID);
-    free(num);
-}
-
 int main()
 {
-    int n, arr[100];
+    int swapTmp;
+    int i;  
+    int n;
+    float* arr[100];
+    int st[400], stEnd;
+    OpenFileID fileID; 
+
+
+    int begin, end, mid;
+    int itL, leftSize, itR, rightSize;
+    float* leftArr[100], *rightArr[100];
+    // ==========================================================
+    //                        nhap du lieu
+    // ==========================================================
 
     PrintString("Nhap so phan tu cua mang:" );
-
 
     // kiem tra so phan tu co hop le khong
     n = ReadInt();
@@ -67,18 +28,92 @@ int main()
         return 0;
     }
 
-    for(int i = 0; i < n; i++) 
+    for(i = 0; i < n; i++) 
     {
+        // bao hieu nguoi dung nhap phan tu i
         PrintString("Nhap phan tu thu ");
         PrintInt(i);
         PrintChar(':');
-        arr[i] = ReadInt();
+        arr[i] = ReadFloat();
     }
 
-    mergeSort(arr, 0, n - 1);
+
+    // ==========================================================
+    //                        mergesort
+    // ==========================================================
+
+
+    // tam dinh nghia 3 phan tu lien tiep trong mang st duoc xem nhu 1 block
+    // 1 block la du lieu de thuc hien cac cong viec
+    // [begin, end, -1]  : sap xep hai phan begin->mid va mid + 1->end
+    // [begin, end, mid] : tron hai phan begin->mid va mid + 1->end de tao thanh day tang dan
+    st[0] = 0;
+    st[1] = n - 1;
+    st[2] = -1;
+    stEnd = 3;
+    while (stEnd > 0)
+    {
+        begin = st[stEnd - 3];
+        end = st[stEnd - 2];
+        mid = st[stEnd - 1];
+        stEnd -= 3;
+        if (mid == -1) // truong hop [begin, end, -1]
+        {
+            if (begin >= end) continue;
+
+            mid = (begin + end) / 2;
+
+            st[stEnd] = begin;
+            st[stEnd + 1] = end;
+            st[stEnd + 2] = mid;
+
+            st[stEnd + 3] = begin;
+            st[stEnd + 4] = mid;
+            st[stEnd + 5] = -1;
+
+            st[stEnd + 6] = mid + 1;
+            st[stEnd + 7] = end;
+            st[stEnd + 8] = -1;
+            stEnd += 9;
+        }
+        else // truong hop [begin, end, mid]
+        {
+            int leftSize = mid - begin + 1;
+            int rightSize = end - mid;
+
+            for(int i = 0; i < leftSize; i++) leftArr[i] = arr[begin + i];
+            for(int i = 0; i < rightSize; i++) rightArr[i] = arr[mid + 1 + i];
+
+            itL = itR = 0;
+            while (itL < leftSize && itR < rightSize)
+            {
+                if (leftArr[itL] <= rightArr[itR]) 
+                {
+                    arr[begin + itL + itR] = leftArr[itL];
+                    itL++;
+                }
+                else 
+                {
+                    arr[begin + itL + itR] = leftArr[itR];
+                    itR++;
+                }
+            }
+
+            while (itR < rightSize) arr[begin + itL + itR] = leftArr[itR++];
+            while (itL < leftSize) arr[begin + itL + itR] = leftArr[itL++];
+        }
+    }
+
+
+
+
+
+    // ==========================================================
+    //                  xuat du lieu sang file
+    // ==========================================================
 
     Create("mergesort.txt");
-    int fileID = Open("mergesort.txt", 0);
+    fileID = Open("mergesort.txt", 0);
 
     if (fileID == -1)
     {
@@ -89,13 +124,15 @@ int main()
     // cau truc:
     // dong 1: n
     // dong 2: arr[0] arr[1] ... arr[n - 1]
-    filePrintInt(n, fileID);
+    WriteInt(n, fileID);
     Write("\n", 1, fileID);
-    for(int i = 0; i < n; i++)
+    for(i = 0; i < n; i++)
     {
-        filePrintInt(arr[i], fileID);
+        WriteFloat(arr[i], fileID);
         Write(" ", 1, fileID);
     }
+
+    for(i = 0; i < n; i++) FreeFloat(arr[i]);
 
     return 0;
 }
