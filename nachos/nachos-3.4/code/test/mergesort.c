@@ -78,11 +78,11 @@ int main()
         }
         else // truong hop [begin, end, mid]
         {
-            int leftSize = mid - begin + 1;
-            int rightSize = end - mid;
+            leftSize = mid - begin + 1;
+            rightSize = end - mid;
 
-            for(int i = 0; i < leftSize; i++) leftArr[i] = arr[begin + i];
-            for(int i = 0; i < rightSize; i++) rightArr[i] = arr[mid + 1 + i];
+            for(i = 0; i < leftSize; i++) leftArr[i] = arr[begin + i];
+            for(i = 0; i < rightSize; i++) rightArr[i] = arr[mid + 1 + i];
 
             itL = itR = 0;
             while (itL < leftSize && itR < rightSize)
@@ -94,13 +94,23 @@ int main()
                 }
                 else 
                 {
-                    arr[begin + itL + itR] = leftArr[itR];
+                    arr[begin + itL + itR] = rightArr[itR];
                     itR++;
                 }
             }
 
-            while (itR < rightSize) arr[begin + itL + itR] = leftArr[itR++];
-            while (itL < leftSize) arr[begin + itL + itR] = leftArr[itL++];
+
+            while (itR < rightSize) 
+            {
+                arr[begin + itL + itR] = rightArr[itR];
+                itR++;
+            }
+
+            while (itL < leftSize) 
+            {
+                arr[begin + itL + itR] = leftArr[itL];
+                itL++;
+            }
         }
     }
 
