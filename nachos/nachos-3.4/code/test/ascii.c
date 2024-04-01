@@ -1,15 +1,14 @@
 #include "syscall.h"
 #include "copyright.h"
 
+char asciiCharacter[7] = " : \" \"\n";
+
+
 int main()
 {
     // mo file mota bang system call Open
     int isCreate = Create("ascii.txt");
     OpenFileID fileID = Open("ascii.txt", 0);
-
-
-    char asciiCharacter[] = " : \" \"\n";
-    char num[5];
 
     int i;
     // in cac ki tu ra man hinh
@@ -37,5 +36,6 @@ int main()
         asciiCharacter[4]++; // cap nhat thanh ki tu tiep theo
     }
 
+    Halt();
     return 0;
 }

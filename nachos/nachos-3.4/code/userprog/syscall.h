@@ -42,6 +42,7 @@
 #define SC_PrintString  20
 #define SC_WriteInt     21
 #define SC_WriteFloat   22
+#define SC_ReadString1  23
 
 #ifndef IN_ASM
 
@@ -173,6 +174,8 @@ void PrintChar(char character);
  * or when its length is greater than or equal to the specified length
  */
 void ReadString (char* buffer, int length);
+
+void ReadString1 (char* buffer, char* string);
 
 /* Write a string to console*/
 void PrintString (char* buffer);

@@ -129,7 +129,7 @@ int main()
     // dong 2: arr[0] arr[1] ... arr[n - 1]
     WriteInt(n, fileID);
     Write("\n", 1, fileID);
-    for(int i = 0; i < n; i++)
+    for(i = 0; i < n; i++)
     {
         WriteInt(n, fileID);
         Write(" ", 1, fileID);

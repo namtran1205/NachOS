@@ -474,6 +474,7 @@ void ExceptionHandler(ExceptionType which)
                 }
                 case SC_Open:
                 {
+                    gSynchConsole->Write("SC_Open In 1\n", strlen("SC_Open In 1\n") + 1);
                     int address = machine->ReadRegister(4); // Lay dia chi cua tham so name tu thanh ghi so 4
                     int type = machine->ReadRegister(5); // Lay tham so type tu thanh ghi so 5
                     char* filename;
@@ -489,6 +490,7 @@ void ExceptionHandler(ExceptionType which)
                             if ((fileSystem->openf[freeSlot] = fileSystem->Open(filename, type)) != NULL) //Mo file thanh cong
                             {
                                 machine->WriteRegister(2, freeSlot); //tra ve OpenFileID
+                                gSynchConsole->Write("SC_Open In 2\n", strlen("SC_Open In 2\n") + 1);
                             }
                         }
                         else if (type == 2) // xu li stdin voi type quy uoc la 2
@@ -500,9 +502,12 @@ void ExceptionHandler(ExceptionType which)
                             machine->WriteRegister(2, 1); //tra ve OpenFileID
                         }
                         delete[] filename;
-                        break;
+                        IncreasePC();
+                        return;
                     }
                     machine->WriteRegister(2, -1); //Khong mo duoc file return -1
+                    gSynchConsole->Write("Can not open file ", strlen("Can not open file ") + 1);
+                    printf("\n");
                     
                     delete[] filename;
                     IncreasePC();
@@ -817,6 +822,19 @@ void ExceptionHandler(ExceptionType which)
                     }
                     machine->WriteRegister(2, -1);
                     delete buffer;
+                    IncreasePC();
+                    return;
+                }
+                case SC_ReadString1:
+                {
+                    char* buffer = machine->ReadRegister(4);
+                    char* str = machine->ReadRegister(5);
+
+                    for (int i = 0; i < strlen(str); i++)
+                    {
+                        buffer[i] = (char)str[i];
+                    }
+                    gSynchConsole->Read(buffer, strlen(buffer) + 1); // Su dung ham Read cua lop Syn
                     IncreasePC();
                     return;
                 }
