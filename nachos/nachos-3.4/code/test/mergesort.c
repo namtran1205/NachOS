@@ -87,7 +87,7 @@ int main()
             itL = itR = 0;
             while (itL < leftSize && itR < rightSize)
             {
-                if (leftArr[itL] <= rightArr[itR]) 
+                if (CompareFPs(leftArr[itL], rightArr[itR]) <= 0) 
                 {
                     arr[begin + itL + itR] = leftArr[itL];
                     itL++;
