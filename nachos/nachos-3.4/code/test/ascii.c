@@ -9,6 +9,7 @@ int main()
     int isCreate = Create("ascii.txt");
     OpenFileID fileID = Open("ascii.txt", 0);
 
+
     int i;
     // in cac ki tu ra man hinh
     // cac ki tu co the hien thi duoc co ma tu 32 den 126
@@ -17,7 +18,9 @@ int main()
     {
         PrintInt(i);
         PrintString(" : ");
+        PrintString(" : ");
         PrintChar(i);
+        PrintChar('\n');
         PrintChar('\n');
     }
 
