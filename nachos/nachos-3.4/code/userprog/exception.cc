@@ -650,6 +650,7 @@ void ExceptionHandler(ExceptionType which)
                 }
                 case SC_WriteInt:
                 {
+                    
                     int number = machine->ReadRegister(4);    // Lay gia tri can ghi(tham so number) tu thanh ghi so 4
                     OpenFileID id = machine->ReadRegister(5); // Lay id cua file tu thanh ghi so 5
                     int OldPos;

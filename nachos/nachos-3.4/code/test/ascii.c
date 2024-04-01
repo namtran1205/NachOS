@@ -1,14 +1,14 @@
 #include "syscall.h"
 #include "copyright.h"
 
-char asciiCharacter[7] = " : \" \"\n";
-
-
+char c[1]; // bien luu ki tu tuong ung voi gia tri i
+int arr[1]; // bien luu ma cua ki tu
 int main()
 {
     // mo file mota bang system call Open
     int isCreate = Create("ascii.txt");
     OpenFileID fileID = Open("ascii.txt", 0);
+
 
     int i;
     // in cac ki tu ra man hinh
@@ -17,9 +17,9 @@ int main()
     for(i = 32; i < 127; i++)
     {
         PrintInt(i);
-        PrintString(" : \"");
+        PrintString(" : ");
         PrintChar(i);
-        PrintChar('\"\n');
+        PrintChar('\n');
     }
 
     // trong truong hop chay lan dau tien
@@ -29,11 +29,16 @@ int main()
 
     Write("Ascii  table:\n", 14, fileID);
 
+    c[0] = (char) 32;
+    arr[0] = 32;
     for(i = 32; i < 127; i++)
     {
-        WriteInt(i, fileID);
-        Write(asciiCharacter, 7, fileID);
-        asciiCharacter[4]++; // cap nhat thanh ki tu tiep theo
+        WriteInt((int)arr[0], fileID);
+        // Write(" : ", 3, fileID);
+        // Write(c, 1, fileID);
+        Write("\n", 1, fileID);
+        c[0]++; // chuyen thanh ki tu tiep theo
+        arr[0]++;
     }
 
     Halt();
