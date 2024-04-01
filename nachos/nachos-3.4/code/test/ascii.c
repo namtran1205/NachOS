@@ -18,9 +18,7 @@ int main()
     {
         PrintInt(i);
         PrintString(" : ");
-        PrintString(" : ");
         PrintChar(i);
-        PrintChar('\n');
         PrintChar('\n');
     }
 
