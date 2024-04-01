@@ -1,8 +1,7 @@
 #include "syscall.h"
 #include "copyright.h"
 
-char asciiCharacter[7] = " : \" \"\n";
-
+char c[1];
 
 int main()
 {
@@ -17,24 +16,25 @@ int main()
     for(i = 32; i < 127; i++)
     {
         PrintInt(i);
-        PrintString(" : \"");
+        PrintString(" : ");
         PrintChar(i);
-        PrintChar('\"\n');
+        PrintChar('\n');
     }
 
-    // trong truong hop chay lan dau tien
-    // => chua co du lieu trong file ascii
-    // => can ghi vao file cac ki tu
-    if (isCreate || fileID < 0) return 0;
+
+    if (fileID < 0) return 0;
 
     Write("Ascii  table:\n", 14, fileID);
-
+    c[0] = 32;
     for(i = 32; i < 127; i++)
     {
         WriteInt(i, fileID);
-        Write(asciiCharacter, 7, fileID);
-        asciiCharacter[4]++; // cap nhat thanh ki tu tiep theo
+        Write(" : ", 3, fileID);
+        Write(c, 1, fileID);
+        Write("\n", 1, fileID);
+        c[0]++;
     }
+    Close(fileID);
 
     Halt();
     return 0;

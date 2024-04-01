@@ -1,21 +1,20 @@
 #include "syscall.h"
 #include "copyright.h"
-int arr[100];
-int st[300];
+int arr[10];
+int st[30];
 
 int main()
 {
-    int swapTmp;
-    int i, j;  
     int n;
     int stEnd;
     OpenFileID fileID;   
 
 
     // quicksort variable 
+    int swapTmp;
+    int i, j;  
     int start, end;
-    int count;
-    int pivot, pivotIndex;
+    int pivot;
 
 
 
@@ -24,7 +23,7 @@ int main()
     // ==========================================================
     
     // nhap so phan tu cua mang
-    PrintString("Nhap so phan tu cua mang:" );
+    PrintString("Nhap so phan tu:" );
     n = ReadInt();
 
 
@@ -39,7 +38,6 @@ int main()
     for(i = 0; i < n; i++) 
     {
         // bao hieu nguoi dung nhap phan tu i
-        PrintString("Nhap phan tu thu ");
         PrintInt(i);
         PrintChar(':');
 
@@ -56,57 +54,41 @@ int main()
     stEnd = 2;
     while (stEnd > 0)
     {
+        PrintInt(stEnd);
+        PrintChar('\n');
         start = st[stEnd - 2];
         end = st[stEnd - 1];
         stEnd = stEnd - 2;
 
-        if (start >= end) continue;
-
         // partition part
+        pivot = arr[(start + end)/2];
+        i = start; j = end;
+        while (i < j)
         {
-            pivot = arr[start];
-
-            count = 0;
-            for (i = start + 1; i <= end; i++) {
-                if (arr[i] <= pivot)
-                    count++;
-            }
-
-            // Giving pivot element its correct position
-            pivotIndex = start + count;
-
-            // swap arr[pivotIndex] and arr[start]
-            swapTmp = arr[pivotIndex];
-            arr[pivotIndex] = arr[start];
-            arr[start] = swapTmp;
-
-            // Sorting left and right parts of the pivot element
-            i = start, j = end;
-
-            while (i < pivotIndex && j > pivotIndex) {
-
-                while (arr[i] <= pivot) {
-                    i++;
-                }
-
-                while (arr[j] > pivot) {
-                    j--;
-                }
-
-                if (i < pivotIndex && j > pivotIndex) {
-                    swapTmp = arr[i];
-                    arr[i] = arr[j];
-                    arr[j] = swapTmp;
-                }
+            while (arr[i] < pivot) i++;
+            while (arr[j] > pivot) j--;
+            
+            if (i <= j){
+                swapTmp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = swapTmp;
+                i++;
+                j--;
             }
         }
-    
-        // create 2 new block in stack for start->pivotIndex - 1 and pivotIndex + 1 -> end
-        st[stEnd] = start;
-        st[stEnd + 1] = pivotIndex - 1;
-        st[stEnd + 2] = pivotIndex + 1;
-        st[stEnd + 3] = end;
-        stEnd = stEnd + 4;
+        // create 2 new block in stack for start->j and i -> end
+        if (i < end){
+            st[stEnd] = i;
+            st[stEnd + 1] = end;
+            stEnd += 2;
+        }
+        if (start < j){
+            st[stEnd] = start;
+            st[stEnd + 1] = j;
+            stEnd += 2;  
+        }
+
+
     }
 
 
@@ -137,6 +119,7 @@ int main()
         WriteInt(arr[i], fileID);
         Write(" ", 1, fileID);
     }
+    Close(fileID);
 
     return 0;
 }

@@ -35,7 +35,7 @@ CPP = gcc -E
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
 
-all: halt shell matmult sort checkNACHOS help mergesort
+all: halt shell matmult sort checkNACHOS help mergesort quicksort ascii
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.c > strt.s
@@ -78,17 +78,17 @@ help: help.o start.o
 	$(LD) $(LDFLAGS) start.o help.o -o help.coff
 	../bin/coff2noff help.coff help
 
-# ascii.o: ascii.c
-# 	$(CC) $(CFLAGS) -c ascii.c
-# ascii: ascii.o start.o
-# 	$(LD) $(LDFLAGS) start.o ascii.o -o ascii.coff
-# 	../bin/coff2noff ascii.coff ascii
+ascii.o: ascii.c
+	$(CC) $(CFLAGS) -c ascii.c
+ascii: ascii.o start.o
+	$(LD) $(LDFLAGS) start.o ascii.o -o ascii.coff
+	../bin/coff2noff ascii.coff ascii
 
-# quicksort.o: quicksort.c
-# 	$(CC) $(CFLAGS) -c quicksort.c
-# quicksort: quicksort.o start.o
-# 	$(LD) $(LDFLAGS) start.o quicksort.o -o quicksort.coff
-# 	../bin/coff2noff quicksort.coff quicksort
+quicksort.o: quicksort.c
+	$(CC) $(CFLAGS) -c quicksort.c
+quicksort: quicksort.o start.o
+	$(LD) $(LDFLAGS) start.o quicksort.o -o quicksort.coff
+	../bin/coff2noff quicksort.coff quicksort
 
 mergesort.o: mergesort.c
 	$(CC) $(CFLAGS) -c mergesort.c

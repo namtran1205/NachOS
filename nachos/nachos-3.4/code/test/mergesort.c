@@ -4,6 +4,7 @@
 float* arr[10];
 float* leftArr[6];
 float* rightArr[6];
+
 int st[25];
 
 int main()
@@ -148,7 +149,7 @@ int main()
         Write(" ", 1, fileID);
     }
 
-
+    Close(fileID);
     for(i = 0; i < n; i++) FreeFloat(arr[i]);
     
     Halt();

@@ -696,7 +696,7 @@ void ExceptionHandler(ExceptionType which)
                         number = number * -1; // Nham chuyen so am thanh so duong de tinh so chu so
                     } 	
                     
-                    while(number % pw != 0)
+                    while(number / pw >= 10)
                     {
                         numberOfNum++;
                         pw *= 10;
@@ -708,7 +708,7 @@ void ExceptionHandler(ExceptionType which)
                     {
                         buffer[startPoint + offset] = (char)((number / pw) + 48);
                         number %= pw;
-                        pw /= pw;
+                        pw /= 10;
                     }
                     if(startPoint > 0) buffer[0] = '-';
                     buffer[startPoint + numberOfNum] = '\0';
