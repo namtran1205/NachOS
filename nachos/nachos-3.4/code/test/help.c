@@ -17,7 +17,7 @@ int main()
         return 0;
     }
 
-    // doc tung khoi 99 ki tu
+    // doc tung khoi 299 ki tu
     while (1)
     {
         realSize = Read(contentBlock, 299, dataFileID);
@@ -26,7 +26,7 @@ int main()
             PrintString(contentBlock);
             contentBlock[realSize] = '\0';
         }
-        if (realSize < 299) break;
+        if (realSize < 299) break; // dung khi so ki tu thuc su khong du
     }
 
     if (dataFileID != -1) Close(dataFileID);

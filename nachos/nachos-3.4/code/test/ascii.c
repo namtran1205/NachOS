@@ -5,12 +5,12 @@ char c[1];
 
 int main()
 {
+    int i;
     // mo file mota bang system call Open
     int isCreate = Create("ascii.txt");
     OpenFileID fileID = Open("ascii.txt", 0);
 
 
-    int i;
     // in cac ki tu ra man hinh
     // cac ki tu co the hien thi duoc co ma tu 32 den 126
     PrintString("Ascii  table:\n");
@@ -37,6 +37,5 @@ int main()
     }
     Close(fileID);
 
-    Halt();
     return 0;
 }
