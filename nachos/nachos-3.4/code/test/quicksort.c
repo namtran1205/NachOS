@@ -54,8 +54,6 @@ int main()
     stEnd = 2;
     while (stEnd > 0)
     {
-        PrintInt(stEnd);
-        PrintChar('\n');
         start = st[stEnd - 2];
         end = st[stEnd - 1];
         stEnd = stEnd - 2;
