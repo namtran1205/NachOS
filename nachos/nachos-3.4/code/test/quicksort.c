@@ -5,12 +5,12 @@ int st[300];
 
 int main()
 {
-    int n;
-    int stEnd;
-    OpenFileID fileID;   
+    int n;               // so phan tu cua mang
+    int stEnd;           // vi tri ket thuc cua stack(hoac kich thuoc hien thoi cua phan stack dang duoc su dung)
+    OpenFileID fileID;   // bien luu id cua file quicksort.txt
 
 
-    // quicksort variable 
+    // cac bien cho thuat toan quicksort 
     int swapTmp;
     int i, j;  
     int start, end;
@@ -54,9 +54,10 @@ int main()
     stEnd = 2;
     while (stEnd > 0)
     {
+        // lay cac gia tri start end cho mot lan chay quicksort
         start = st[stEnd - 2];
         end = st[stEnd - 1];
-        stEnd = stEnd - 2;
+        stEnd = stEnd - 2;  // lui stEnd ve vi tri dau tien khong duoc su dung
 
         // partition part
         pivot = arr[(start + end)/2];
@@ -74,13 +75,13 @@ int main()
                 j--;
             }
         }
-        // create 2 new block in stack for start->j and i -> end
-        if (i < end){
+
+        if (i < end){  // nap them 1 lan chay quicksort cho doan i->end vao stack
             st[stEnd] = i;
             st[stEnd + 1] = end;
             stEnd += 2;
         }
-        if (start < j){
+        if (start < j){ // nap them 1 lan chay quicksort cho doan start->j vao stack
             st[stEnd] = start;
             st[stEnd + 1] = j;
             stEnd += 2;  
@@ -99,6 +100,7 @@ int main()
     Create("quicksort.txt");
     fileID = Open("quicksort.txt", 0);
 
+    // kiem tra viec mo file co thanh cong khong
     if (fileID == -1)
     {
         PrintString("Ghi ket qua that bai!\n");
@@ -117,7 +119,8 @@ int main()
         WriteInt(arr[i], fileID);
         Write(" ", 1, fileID);
     }
-    Close(fileID);
+    
+    Close(fileID); // dong file
 
     return 0;
 }

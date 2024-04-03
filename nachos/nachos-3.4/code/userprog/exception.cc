@@ -148,79 +148,74 @@ void ExceptionHandler(ExceptionType which)
                     break;
                 case SC_Create: 
                 {
-                    int address; 
-                    char* filename; 
-                    DEBUG('a',"\n SC_Create call ..."); 
-                    DEBUG('a',"\n Reading virtual address of filename"); 
-                    // Lấy tham số tên tập tin từ thanh ghi r4 
-                    address = machine->ReadRegister(4); 
-                    DEBUG ('a',"\n Reading filename."); 
-                    // MaxFileLength là = 32 
+                    int address; // Biến lưu địa chỉ của chuỗi tên tập tin
+                    char* filename; // Con trỏ trỏ đến tên tập tin
+                    DEBUG('a',"\n SC_Create call ..."); // Ghi log: Gọi hàm SC_Create
+                    DEBUG('a',"\n Reading virtual address of filename"); // Ghi log: Đọc địa chỉ ảo của tên tập tin
+                    // Lấy tham số tên tập tin từ thanh ghi r4
+                    address = machine->ReadRegister(4); // Gán địa chỉ từ thanh ghi r4 vào biến address
+                    DEBUG ('a',"\n Reading filename."); // Ghi log: Đọc tên tập tin
+                    // MaxFileLength là = 32
                     int MaxFileLength = 32;
-                    filename = User2System(address, MaxFileLength+1);  
-                    if (filename == NULL) 
+                    filename = User2System(address, MaxFileLength+1);  // Lấy tên tập tin từ không gian người dùng và gán vào biến filename
+                    if (filename == NULL) // Kiểm tra xem có đủ bộ nhớ hay không
                     { 
-                        printf("\n Not enough memory in system"); 
-                        DEBUG('a',"\n Not enough memory in system"); 
-                        machine->WriteRegister(2,-1); // trả về lỗi cho chương          
-                    // trình người dùng 
-                        delete filename; 
-                        return; 
+                        printf("\n Not enough memory in system"); // In ra thông báo khi không đủ bộ nhớ
+                        DEBUG('a',"\n Not enough memory in system"); // Ghi log: Không đủ bộ nhớ trong hệ thống
+                        machine->WriteRegister(2,-1); // Trả về lỗi cho chương trình người dùng
+                        delete filename; // Giải phóng bộ nhớ đã cấp phát cho biến filename
+                        return; // Kết thúc hàm
                     } 
-                    DEBUG('a',"\n Finish reading filename."); 
-                    //DEBUG(‘a’,"\n File name : '"<<filename<<"'"); 
+                    DEBUG('a',"\n Finish reading filename."); // Ghi log: Đã đọc xong tên tập tin
                     // Create file with size = 0 
                     // Dùng đối tượng fileSystem của lớp OpenFile để tạo file,  
-                    // việc tạo file này là sử dụng các  thủ tục tạo file của hệ điều  
-                    // hành Linux, chúng ta không quản ly trực tiếp các block trên 
-                    // đĩa cứng cấp phát cho file, việc quản ly các block của file  
+                    // việc tạo file này là sử dụng các thủ tục tạo file của hệ điều  
+                    // hành Linux, chúng ta không quản lý trực tiếp các block trên 
+                    // đĩa cứng cấp phát cho file, việc quản lý các block của file  
                     // trên ổ đĩa là một đồ án khác 
-
-                    if (!fileSystem->Create(filename,0)) 
+                    if (!fileSystem->Create(filename,0)) // Tạo file mới với kích thước = 0, nếu không thành công
                     { 
-                        printf("\n Error create file '%s'",filename); 
-                        machine->WriteRegister(2,-1); 
-                        delete filename; 
-                        return; 
+                        printf("\n Error create file '%s'",filename); // In ra thông báo lỗi khi không tạo được file
+                        machine->WriteRegister(2,-1); // Trả về lỗi cho chương trình người dùng
+                        delete filename; // Giải phóng bộ nhớ đã cấp phát cho biến filename
+                        return; // Kết thúc hàm
                     } 
-                    machine->WriteRegister(2,0); // trả về cho chương trình  
-                        // người dùng thành công 
-                    printf("Successfully created file\n");
-                    delete filename; 
-                    IncreasePC();
-                    return;
+                    machine->WriteRegister(2,0); // Trả về cho chương trình người dùng thành công
+                    printf("Successfully created file\n"); // In ra thông báo tạo file thành công
+                    delete filename; // Giải phóng bộ nhớ đã cấp phát cho biến filename
+                    IncreasePC(); // Tăng giá trị của thanh ghi PC
+                    return; // Kết thúc hàm
                 }
                 case SC_ReadInt:
                 {
-                    char* buffer;
-                    int MAX_BUFFER = 255;
-                    buffer = new char[MAX_BUFFER + 1];
-                    //gSynchConsole->Write("Type an integer number: ", strlen("Type an integer number: ") + 1);
-                    int numbytes = gSynchConsole->Read(buffer, MAX_BUFFER);// doc buffer toi da MAX_BUFFER ki tu, tra ve so ki tu doc dc
-                    int number = 0; // so luu ket qua tra ve cuoi cung
-						
-                    /* Qua trinh chuyen doi tu buffer sang so nguyen int */
-			
-                    // Xac dinh so am hay so duong                       
-                    bool isNegative = false; // Gia thiet la so duong.
+                    char* buffer; // Khai báo con trỏ buffer để lưu dữ liệu đầu vào từ người dùng
+                    int MAX_BUFFER = 255; // Đặt giới hạn tối đa cho buffer
+                    buffer = new char[MAX_BUFFER + 1]; // Cấp phát bộ nhớ động cho buffer với kích thước MAX_BUFFER + 1 để lưu kết thúc chuỗi
+                    int numbytes = gSynchConsole->Read(buffer, MAX_BUFFER); // Đọc dữ liệu từ người dùng vào buffer, trả về số lượng ký tự đã đọc
+                    int number = 0; // Biến lưu trữ số nguyên cuối cùng
+
+                    // Quá trình chuyển đổi từ buffer sang số nguyên int
+
+                    // Xác định dấu của số
+                    bool isNegative = false; // Giả sử số là dương
                     int firstNumIndex = 0;
                     int lastNumIndex = 0;
-                    if(buffer[0] == '-')
+                    if(buffer[0] == '-') // Nếu ký tự đầu tiên là dấu "-"
                     {
-                        isNegative = true;
-                        firstNumIndex = 1;
+                        isNegative = true; // Đánh dấu số là âm
+                        firstNumIndex = 1; // Bắt đầu từ ký tự thứ hai
                         lastNumIndex = 1;                        			   		
                     }
                     
-                    // Kiem tra tinh hop le cua so nguyen buffer
+                    // Kiểm tra tính hợp lệ của buffer
                     for(int i = firstNumIndex; i < numbytes; i++)					
                     {
-                        if(buffer[i] == '.') /// 125.0000000 van la so
+                        if(buffer[i] == '.') // Nếu có dấu chấm thì kiểm tra xem phần thập phân có chứa số khác 0 không
                         {
                             int j = i + 1;
                             for(; j < numbytes; j++)
                             {
-				                // So khong hop le
+                                // Trong trường hợp số không hợp lệ
                                 if(buffer[j] != '0')
                                 {
                                     printf("\n\n The integer number is not valid");
@@ -231,11 +226,11 @@ void ExceptionHandler(ExceptionType which)
                                     return;
                                 }
                             }
-                            // la so thoa cap nhat lastNumIndex
+                        
                             lastNumIndex = i - 1;				
                             break;                           
                         }
-                        else if(buffer[i] < '0' && buffer[i] > '9')
+                        else if(buffer[i] < '0' && buffer[i] > '9') // Kiểm tra xem có ký tự nào không phải số không
                         {
                             printf("\n\n The integer number is not valid");
                             DEBUG('a', "\n The integer number is not valid");
@@ -247,75 +242,77 @@ void ExceptionHandler(ExceptionType which)
                         lastNumIndex = i;    
                     }			
                     
-                    // La so nguyen hop le, tien hanh chuyen chuoi ve so nguyen
+                    // Nếu hợp lệ, chuyển chuỗi về số nguyên
                     for(int i = firstNumIndex; i<= lastNumIndex; i++)
                     {
-                        number = number * 10 + (int)(buffer[i] - 48); 
+                        number = number * 10 + (int)(buffer[i] - 48); // Chuyển đổi từ ký tự số ASCII sang giá trị số nguyên
                     }
                     
-                    // neu la so am thi * -1;
+                    // Trường hợp số âm
                     if(isNegative)
                     {
-                        number = number * -1;
+                        number = number * -1; // Đảo dấu nếu số âm
                     }
-                    machine->WriteRegister(2, number);
-                    IncreasePC();
-                    delete buffer;
+                    machine->WriteRegister(2, number); // Ghi số nguyên vào thanh ghi 2
+                    IncreasePC(); // Tăng giá trị của thanh ghi PC
+                    delete buffer; // Giải phóng bộ nhớ đã cấp phát cho buffer
                     return;	
                 }
                 case SC_PrintInt:
                 {
-                    int number = machine->ReadRegister(4);
-                    //gSynchConsole->Write("The integer number you typed: ", strlen("The integer number you typed: ") + 1);
-		            if(number == 0)
+                    int number = machine->ReadRegister(4); // Đọc số nguyên từ thanh ghi r4
+                    if(number == 0) // Kiểm tra nếu số là 0
                     {
-                        gSynchConsole->Write("0", 1); // In ra man hinh so 0
-                        IncreasePC();
-                        return;    
+                        gSynchConsole->Write("0", 1); // In ra màn hình số 0
+                        IncreasePC(); // Tăng giá trị của thanh ghi PC
+                        return; // Kết thúc hàm
                     }
-                    
-                    /*Qua trinh chuyen so thanh chuoi de in ra man hinh*/
-                    bool isNegative = false; // gia su la so duong
-                    int numberOfNum = 0; // Bien de luu so chu so cua number
-                    int firstNumIndex = 0; 
-			
-                    if(number < 0)
+
+                    // Chuyển số thành chuỗi để in ra màn hình
+                    bool isNegative = false; // Biến xác định dấu của số
+                    int numberOfNum = 0; // Số lượng chữ số
+                    int firstNumIndex = 0; // Chỉ số của chữ số đầu tiên
+
+                    if(number < 0) // Nếu số là số âm
                     {
-                        isNegative = true;
-                        number = number * -1; // Nham chuyen so am thanh so duong de tinh so chu so
-                        firstNumIndex = 1; 
-                    } 	
-                    
-                    int t_number = number; // bien tam cho number
-                    while(t_number)
+                        isNegative = true; // Đánh dấu là số âm
+                        number = number * -1; // Đảo dấu số
+                        firstNumIndex = 1; // Bắt đầu từ vị trí thứ 1 trong chuỗi
+                    } 
+
+                    int t_number = number;
+                    while(t_number) // Đếm số lượng chữ số
                     {
                         numberOfNum++;
                         t_number /= 10;
                     }
-    
-		            // Tao buffer chuoi de in ra man hinh
+
+                    // Tạo buffer để lưu chuỗi kết quả
                     char* buffer;
                     int MAX_BUFFER = 255;
                     buffer = new char[MAX_BUFFER + 1];
-                    for(int i = firstNumIndex + numberOfNum - 1; i >= firstNumIndex; i--)
+                    for(int i = firstNumIndex + numberOfNum - 1; i >= firstNumIndex; i--) // Bắt đầu từ chữ số cuối cùng
                     {
-                        buffer[i] = (char)((number % 10) + 48);
-                        number /= 10;
+                        buffer[i] = (char)((number % 10) + 48); // Chuyển từ số nguyên sang ký tự ASCII
+                        number /= 10; // Loại bỏ chữ số đã xử lý
                     }
+
+                    // Nếu là số âm
                     if(isNegative)
                     {
-                        buffer[0] = '-';
-			            buffer[numberOfNum + 1] = 0;
-                        gSynchConsole->Write(buffer, numberOfNum + 1);
-                        delete buffer;
-                        IncreasePC();
-                        return;
+                        buffer[0] = '-'; // Gắn dấu trừ vào đầu chuỗi
+                        buffer[numberOfNum + 1] = 0; // Kết thúc chuỗi
+                        gSynchConsole->Write(buffer, numberOfNum + 1); // In chuỗi ra màn hình
+                        delete buffer; // Giải phóng bộ nhớ đã cấp phát cho buffer
+                        IncreasePC(); // Tăng giá trị của thanh ghi PC
+                        return; // Kết thúc hàm
                     }
-		            buffer[numberOfNum] = 0;	
-                    gSynchConsole->Write(buffer, numberOfNum);
-                    delete buffer;
-                    IncreasePC();
-                    return;      
+                    buffer[numberOfNum] = 0; // Kết thúc chuỗi
+                    gSynchConsole->Write(buffer, numberOfNum); // In chuỗi ra màn hình
+                    delete buffer; // Giải phóng bộ nhớ đã cấp phát cho buffer
+                    IncreasePC(); // Tăng giá trị của thanh ghi PC
+                    return; // Kết thúc hàm
+
                 }
                 case SC_ReadFloat:
                 {
@@ -397,352 +394,383 @@ void ExceptionHandler(ExceptionType which)
                 }
                 case SC_ReadChar:
                 {
-                    //Input: Khong co
-			        //Output: Duy nhat 1 ky tu (char)
-			        //Cong dung: Doc mot ky tu tu nguoi dung nhap
-			        int maxBytes = 255;
-			        char* buffer = new char[255];
+                    // Input: Không có
+                    // Output: Duy nhất 1 ký tự (char)
+                    // Công dụng: Đọc một ký tự từ người dùng nhập vào
+                    int maxBytes = 255; // Đặt số lượng ký tự tối đa có thể nhập vào là 255
+                    char* buffer = new char[255]; // Cấp phát bộ nhớ động cho buffer để lưu ký tự nhập vào từ người dùng
                     //gSynchConsole->Write("Type a character: ", strlen("Type a character: ") + 1);
-			        int numBytes = gSynchConsole->Read(buffer, maxBytes);
-        
-			        if(numBytes > 1) //Neu nhap nhieu hon 1 ky tu thi khong hop le
-			        {
-			        	printf("Chi duoc nhap duy nhat 1 ky tu!");
-			        	DEBUG('a', "\nERROR: Chi duoc nhap duy nhat 1 ky tu!");
-			        	machine->WriteRegister(2, 0);
-			        }
-			        else if(numBytes == 0) //Ky tu rong
-			        {
-			        	printf("Ky tu rong!");
-			        	DEBUG('a', "\nERROR: Ky tu rong!");
-			        	machine->WriteRegister(2, 0);
-			        }
-			        else
-			        {
-			        	//Chuoi vua lay co dung 1 ky tu, lay ky tu o index = 0, return vao thanh ghi R2
-			        	char c = buffer[0];
-			        	machine->WriteRegister(2, c);
-			        }
-        
-			        delete buffer;
-                    IncreasePC();
-                    return;
-                }
-                case SC_PrintChar:
-                {
-                    char temp = (char)machine->ReadRegister(4);
+                    int numBytes = gSynchConsole->Read(buffer, maxBytes); // Đọc dữ liệu từ người dùng vào buffer, trả về số lượng ký tự đã đọc
 
-                    //gSynchConsole->Write("The character you typed: ", strlen("The character you typed: ") + 1);
-                    gSynchConsole->Write(&temp, 1);
-                    IncreasePC();
-                    return;
-                }
-                case SC_ReadString:
-                {
-                    int address, length;
-                    char* buffer;
-                    address = machine->ReadRegister(4); // Read the buffer parameter address from register 4
-                    length = machine->ReadRegister(5); // Read the maximum length of the input string from register 5
-                    buffer = User2System(address, length); // Copy string from User Space to System Space
-                    if (buffer != NULL) {
-                        //gSynchConsole->Write("Type a string: ", strlen("Type a string: ") + 1);
-                        gSynchConsole->Read(buffer, length); // Use SynchConsole's Read function to read the string
-                        System2User(address, length, buffer); // Copy string from System Space to User Space
-                        delete[] buffer; // Free allocated memory
-                    } else {
-                        DEBUG('a', "\nError: Failed to allocate memory for buffer.");
-                    }
-                    IncreasePC();
-                    return;
-                }
-                case SC_PrintString:
-                {
-                    int address = machine->ReadRegister(4); // Get the buffer parameter address from register 4
-                    const int BUFFER_SIZE = 255;
-                    char* buffer = User2System(address, BUFFER_SIZE); // Copy string from User Space to System Space with a buffer of 255 characters
-                    int length = 0;
-                    while (*(buffer + length) != '\0') // Determine the actual length of the string
-                        length++;
-                    //gSynchConsole->Write("The string you typed: ", strlen("The string you typed: ") + 1);
-                    gSynchConsole->Write(buffer, length + 1); // Use SynchConsole's Write function to print the string
-                    delete[] buffer; // Free allocated memory
-                    IncreasePC();
-                    return;
-                }
-                case SC_Open:
-                {
-                    int address = machine->ReadRegister(4); // Lay dia chi cua tham so name tu thanh ghi so 4
-                    int type = machine->ReadRegister(5); // Lay tham so type tu thanh ghi so 5
-                    char* filename;
-                    filename = User2System(address, 32); // Copy chuoi tu vung nho User Space sang System Space voi bo dem name dai MaxFileLength
-                    //Kiem tra xem OS con mo dc file khong
-
-                    int freeSlot = fileSystem->FindFreeSlot();
-                    if (freeSlot != -1) //Chi xu li khi con slot trong
+                    if(numBytes > 1) // Nếu người dùng nhập nhiều hơn 1 ký tự
                     {
-                        if (type == 0 || type == 1) //chi xu li khi type = 0 hoac 1
-                        {
-                            
-                            if ((fileSystem->openf[freeSlot] = fileSystem->Open(filename, type)) != NULL) //Mo file thanh cong
-                            {
-                                machine->WriteRegister(2, freeSlot); //tra ve OpenFileID
-                            }
-                        }
-                        else if (type == 2) // xu li stdin voi type quy uoc la 2
-                        {
-                            machine->WriteRegister(2, 0); //tra ve OpenFileID
-                        }
-                        else // xu li stdout voi type quy uoc la 3
-                        {
-                            machine->WriteRegister(2, 1); //tra ve OpenFileID
-                        }
-                        delete[] filename;
-                        IncreasePC();
-                        return;
+                        printf("Chỉ được nhập duy nhất 1 ký tự!"); // In ra màn hình thông báo lỗi
+                        DEBUG('a', "\nERROR: Chỉ được nhập duy nhất 1 ký tự!"); // Ghi log: Lỗi - Chỉ được nhập duy nhất 1 ký tự
+                        machine->WriteRegister(2, 0); // Ghi 0 vào thanh ghi R2 để báo lỗi
                     }
-                    machine->WriteRegister(2, -1); //Khong mo duoc file return -1
-                    
-                    delete[] filename;
-                    IncreasePC();
-                    return;
-                }
-                case SC_Read:
-                {
-                    int address = machine->ReadRegister(4); // Lay dia chi cua tham so buffer tu thanh ghi so 4
-                    int charcount = machine->ReadRegister(5); // Lay charcount tu thanh ghi so 5
-                    int id = machine->ReadRegister(6); // Lay id cua file tu thanh ghi so 6 
-                    int OldPos;
-                    int NewPos;
-                    char *buf;
-                    // Kiem tra id cua file truyen vao co nam ngoai bang mo ta file khong
-                    if (id < 0 || id > 14)
+                    else if(numBytes == 0) // Nếu ký tự nhập vào rỗng
                     {
-                        printf("\nKhong the read vi id nam ngoai bang mo ta file.");
-                        machine->WriteRegister(2, -1);
-                        IncreasePC();
-                        return;
-                    }
-                    // Kiem tra file co ton tai khong
-                    if (fileSystem->openf[id] == NULL)
-                    {
-                        printf("\nKhong the read vi file nay khong ton tai.");
-                        machine->WriteRegister(2, -1);
-                        IncreasePC();
-                        return;
-                    }
-                    if (fileSystem->openf[id]->type == 3) // Xet truong hop doc file stdout (type quy uoc la 3) thi tra ve -1
-                    {
-                        printf("\nKhong the read file stdout.");
-                        machine->WriteRegister(2, -1);
-                        IncreasePC();
-                        return;
-                    }
-                    OldPos = fileSystem->openf[id]->GetCurrentPos(); // Kiem tra thanh cong thi lay vi tri OldPos
-                    buf = User2System(address, charcount); // Copy chuoi tu vung nho User Space sang System Space voi bo dem buffer dai charcount
-                    // Xet truong hop doc file stdin (type quy uoc la 2)
-                    if (fileSystem->openf[id]->type == 2)
-                    {
-                        // Su dung ham Read cua lop SynchConsole de tra ve so byte thuc su doc duoc
-                        int size = gSynchConsole->Read(buf, charcount); 
-                        System2User(address, size, buf); // Copy chuoi tu vung nho System Space sang User Space voi bo dem buffer co do dai la so byte thuc su
-                        machine->WriteRegister(2, size); // Tra ve so byte thuc su doc duoc
-                        delete buf;
-                        IncreasePC();
-                        return;
-                    }
-                    // Xet truong hop doc file binh thuong thi tra ve so byte thuc su
-                    if ((fileSystem->openf[id]->Read(buf, charcount)) > 0)
-                    {
-                        // So byte thuc su = NewPos - OldPos
-                        NewPos = fileSystem->openf[id]->GetCurrentPos();
-                        // Copy chuoi tu vung nho System Space sang User Space voi bo dem buffer co do dai la so byte thuc su 
-                        System2User(address, NewPos - OldPos, buf); 
-                        machine->WriteRegister(2, NewPos - OldPos);
+                        printf("Ký tự rỗng!"); // In ra màn hình thông báo lỗi
+                        DEBUG('a', "\nERROR: Ký tự rỗng!"); // Ghi log: Lỗi - Ký tự rỗng
+                        machine->WriteRegister(2, 0); // Ghi 0 vào thanh ghi R2 để báo lỗi
                     }
                     else
                     {
-                        // Truong hop con lai la doc file co noi dung la NULL tra ve -2
-                        //printf("\nDoc file rong.");
-                        machine->WriteRegister(2, -2);
+                        // Chuỗi vừa lấy có đúng 1 ký tự, lấy ký tự ở index = 0, ghi vào thanh ghi R2
+                        char c = buffer[0];
+                        machine->WriteRegister(2, c);
                     }
-                    delete buf;
-                    IncreasePC();
-                    return;
+
+                    delete buffer; // Giải phóng bộ nhớ đã cấp phát cho buffer
+                    IncreasePC(); // Tăng giá trị của thanh ghi PC
+                    return; // Kết thúc hàm
+
+                }
+                case SC_PrintChar:
+                {
+                    char temp = (char)machine->ReadRegister(4); // Đọc ký tự từ thanh ghi r4 và gán vào biến temp
+
+                    //gSynchConsole->Write("The character you typed: ", strlen("The character you typed: ") + 1);
+                    // Ghi chuỗi "The character you typed: " ra màn hình
+                    gSynchConsole->Write(&temp, 1); // Ghi ký tự temp ra màn hình
+                    IncreasePC(); // Tăng giá trị của thanh ghi PC
+                    return; // Kết thúc hàm
+
+                }
+                case SC_ReadString:
+                {
+                    int address, length; // Khai báo biến address và length để lưu địa chỉ và độ dài của chuỗi
+                    char* buffer; // Khai báo con trỏ buffer để lưu chuỗi
+
+                    address = machine->ReadRegister(4); // Đọc địa chỉ tham số buffer từ thanh ghi r4
+                    length = machine->ReadRegister(5); // Đọc độ dài tối đa của chuỗi từ thanh ghi r5
+
+                    buffer = User2System(address, length); // Sao chép chuỗi từ không gian người dùng sang không gian hệ thống
+
+                    if (buffer != NULL) { // Nếu việc cấp phát bộ nhớ cho buffer thành công
+                        //gSynchConsole->Write("Type a string: ", strlen("Type a string: ") + 1);
+                        // Yêu cầu người dùng nhập chuỗi và lưu vào buffer
+                        gSynchConsole->Read(buffer, length); // Sử dụng hàm Read của SynchConsole để đọc chuỗi
+
+                        // Sao chép chuỗi từ không gian hệ thống sang không gian người dùng
+                        System2User(address, length, buffer);
+
+                        delete[] buffer; // Giải phóng bộ nhớ đã cấp phát cho buffer
+                    } else {
+                        DEBUG('a', "\nError: Failed to allocate memory for buffer."); // Ghi log: Lỗi - Không thể cấp phát bộ nhớ cho buffer
+                    }
+
+                    IncreasePC(); // Tăng giá trị của thanh ghi PC
+                    return; // Kết thúc hàm
+
+                }
+                case SC_PrintString:
+                {
+                    int address = machine->ReadRegister(4); // Lấy địa chỉ tham số buffer từ thanh ghi r4
+                    const int BUFFER_SIZE = 255; // Đặt kích thước tối đa của buffer là 255 ký tự
+                    char* buffer = User2System(address, BUFFER_SIZE); // Sao chép chuỗi từ không gian người dùng sang không gian hệ thống với một buffer có kích thước là 255 ký tự
+                    int length = 0; // Khởi tạo biến length để lưu độ dài thực sự của chuỗi
+                    while (*(buffer + length) != '\0') // Xác định độ dài thực sự của chuỗi
+                        length++;
+                    //gSynchConsole->Write("The string you typed: ", strlen("The string you typed: ") + 1);
+                    // Ghi chuỗi "The string you typed: " ra màn hình
+                    gSynchConsole->Write(buffer, length + 1); // Sử dụng hàm Write của SynchConsole để in chuỗi
+                    delete[] buffer; // Giải phóng bộ nhớ đã cấp phát cho buffer
+                    IncreasePC(); // Tăng giá trị của thanh ghi PC
+                    return; // Kết thúc hàm
+                }
+                case SC_Open:
+                {
+                    int address = machine->ReadRegister(4); // Lấy địa chỉ tham số name từ thanh ghi số 4
+                    int type = machine->ReadRegister(5); // Lấy tham số type từ thanh ghi số 5
+                    char* filename; // Khai báo con trỏ filename để lưu tên tập tin
+                    filename = User2System(address, 32); // Sao chép chuỗi từ không gian người dùng sang không gian hệ thống với buffer có kích thước là 32 ký tự
+
+                    // Kiểm tra xem hệ điều hành có thể mở được tập tin không
+                    int freeSlot = fileSystem->FindFreeSlot(); // Tìm một slot trống trong bảng fileSystem->openf
+                    if (freeSlot != -1) // Chỉ xử lí khi còn slot trống
+                    {
+                        if (type == 0 || type == 1) // Chỉ xử lí khi type là 0 hoặc 1
+                        {
+                            // Mở tập tin với tên là filename và type là type
+                            if ((fileSystem->openf[freeSlot] = fileSystem->Open(filename, type)) != NULL) // Mở tập tin thành công
+                            {
+                                machine->WriteRegister(2, freeSlot); // Trả về OpenFileID
+                            }
+                        }
+                        else if (type == 2) // Xử lí trường hợp stdin với type được quy ước là 2
+                        {
+                            machine->WriteRegister(2, 0); // Trả về OpenFileID
+                        }
+                        else // Xử lí trường hợp stdout với type được quy ước là 3
+                        {
+                            machine->WriteRegister(2, 1); // Trả về OpenFileID
+                        }
+                        delete[] filename; // Giải phóng bộ nhớ đã cấp phát cho filename
+                        IncreasePC(); // Tăng giá trị của thanh ghi PC
+                        return; // Kết thúc hàm
+                    }
+
+                    machine->WriteRegister(2, -1); // Không mở được tập tin, trả về -1
+                    delete[] filename; // Giải phóng bộ nhớ đã cấp phát cho filename
+                    IncreasePC(); // Tăng giá trị của thanh ghi PC
+                    return; // Kết thúc hàm
+                }
+                case SC_Read:
+                {
+                    int address = machine->ReadRegister(4); // Lấy địa chỉ tham số buffer từ thanh ghi số 4
+                    int charcount = machine->ReadRegister(5); // Lấy giá trị charcount từ thanh ghi số 5
+                    int id = machine->ReadRegister(6); // Lấy id của file từ thanh ghi số 6
+                    int OldPos; // Khai báo biến OldPos để lưu vị trí hiện tại của con trỏ đọc file
+                    int NewPos; // Khai báo biến NewPos để lưu vị trí mới của con trỏ đọc file
+                    char *buf; // Khai báo con trỏ buf để lưu dữ liệu đọc được từ file
+
+                    // Kiểm tra xem id của file có nằm ngoài bảng mô tả file không
+                    if (id < 0 || id > 14)
+                    {
+                        printf("\nKhông thể đọc vì id nằm ngoài bảng mô tả file.");
+                        machine->WriteRegister(2, -1); // Trả về -1 để báo lỗi
+                        IncreasePC(); // Tăng giá trị của thanh ghi PC
+                        return; // Kết thúc hàm
+                    }
+
+                    // Kiểm tra xem file có tồn tại không
+                    if (fileSystem->CheckopenF[id] == NULL)
+                    {
+                        printf("\nKhông thể đọc vì file này không tồn tại.");
+                        machine->WriteRegister(2, -1); // Trả về -1 để báo lỗi
+                        IncreasePC(); // Tăng giá trị của thanh ghi PC
+                        return; // Kết thúc hàm
+                    }
+
+                    // Xét trường hợp đọc file stdout (type được quy ước là 3) thì trả về -1
+                    if (fileSystem->CheckopenF[id]->type == 3)
+                    {
+                        printf("\nKhông thể đọc file stdout.");
+                        machine->WriteRegister(2, -1); // Trả về -1 để báo lỗi
+                        IncreasePC(); // Tăng giá trị của thanh ghi PC
+                        return; // Kết thúc hàm
+                    }
+
+                    OldPos = fileSystem->CheckopenF[id]->GetCurrentPos(); // Lấy vị trí hiện tại của con trỏ đọc file
+
+                    buf = User2System(address, charcount); // Sao chép chuỗi từ không gian người dùng sang không gian hệ thống với buffer có kích thước là charcount
+
+                    // Xét trường hợp đọc file stdin (type được quy ước là 2)
+                    if (fileSystem->CheckopenF[id]->type == 2)
+                    {
+                        // Sử dụng hàm Read của lớp SynchConsole để đọc dữ liệu từ bàn phím và trả về số byte thực sự đọc được
+                        int size = gSynchConsole->Read(buf, charcount); 
+                        // Sao chép chuỗi từ không gian hệ thống sang không gian người dùng với buffer có kích thước là số byte thực sự đọc được
+                        System2User(address, size, buf); 
+                        machine->WriteRegister(2, size); // Trả về số byte thực sự đọc được
+                        delete buf; // Giải phóng bộ nhớ đã cấp phát cho buf
+                        IncreasePC(); // Tăng giá trị của thanh ghi PC
+                        return; // Kết thúc hàm
+                    }
+
+                    // Xét trường hợp đọc file bình thường
+                    if ((fileSystem->CheckopenF[id]->Read(buf, charcount)) > 0)
+                    {
+                        // Số byte thực sự đọc được là NewPos - OldPos
+                        NewPos = fileSystem->CheckopenF[id]->GetCurrentPos();
+                        // Sao chép chuỗi từ không gian hệ thống sang không gian người dùng với buffer có kích thước là số byte thực sự đọc được
+                        System2User(address, NewPos - OldPos, buf); 
+                        machine->WriteRegister(2, NewPos - OldPos); // Trả về số byte thực sự đọc được
+                    }
+                    else
+                    {
+                        // Trường hợp còn lại là đọc file có nội dung là NULL, trả về -2
+                        //printf("\nĐọc file rỗng.");
+                        machine->WriteRegister(2, -2); // Trả về -2 để báo lỗi
+                    }
+
+                    delete buf; // Giải phóng bộ nhớ đã cấp phát cho buf
+                    IncreasePC(); // Tăng giá trị của thanh ghi PC
+                    return; // Kết thúc hàm
                 }
                 case SC_Write:
                 {
-                    int address = machine->ReadRegister(4); // Lay dia chi cua tham so buffer tu thanh ghi so 4
-                    int charcount = machine->ReadRegister(5); // Lay charcount tu thanh ghi so 5
-                    int id = machine->ReadRegister(6); // Lay id cua file tu thanh ghi so 6
-                    int OldPos;
-                    int NewPos;
-                    char *buf;
-                    // Kiem tra id cua file truyen vao co nam ngoai bang mo ta file khong
+                    int address = machine->ReadRegister(4); // Lấy địa chỉ tham số buffer từ thanh ghi số 4
+                    int charcount = machine->ReadRegister(5); // Lấy giá trị charcount từ thanh ghi số 5
+                    int id = machine->ReadRegister(6); // Lấy id của file từ thanh ghi số 6
+                    int OldPos; // Khai báo biến OldPos để lưu vị trí hiện tại của con trỏ đọc file
+                    int NewPos; // Khai báo biến NewPos để lưu vị trí mới của con trỏ đọc file
+                    char *buf; // Khai báo con trỏ buf để lưu dữ liệu cần ghi vào file
+
+                    // Kiểm tra xem id của file có nằm ngoài phạm vi bảng mô tả file không
                     if (id < 0 || id > 14)
                     {
-                        printf("\nCannot writing.");
-                        machine->WriteRegister(2, -1);
-                        IncreasePC();
-                        return;
+                        printf("\nCannot writing."); // In thông báo lỗi
+                        machine->WriteRegister(2, -1); // Trả về -1 để báo lỗi
+                        IncreasePC(); // Tăng giá trị của thanh ghi PC
+                        return; // Kết thúc hàm
                     }
-                    // Kiem tra file co ton tai khong
-                    if (fileSystem->openf[id] == NULL)
+
+                    // Kiểm tra xem file có tồn tại không
+                    if (fileSystem->CheckopenF[id] == NULL)
                     {
-                        printf("\nCannot write.");
-                        machine->WriteRegister(2, -1);
-                        IncreasePC();
-                        return;
+                        printf("\nCannot write."); // In thông báo lỗi
+                        machine->WriteRegister(2, -1); // Trả về -1 để báo lỗi
+                        IncreasePC(); // Tăng giá trị của thanh ghi PC
+                        return; // Kết thúc hàm
                     }
-                    // Xet truong hop ghi file only read (type quy uoc la 1) hoac file stdin (type quy uoc la 2) thi tra ve -1
-                    if (fileSystem->openf[id]->type == 1 || fileSystem->openf[id]->type == 2)
+
+                    // Xét trường hợp ghi vào file chỉ có quyền đọc (type quy ước là 1) hoặc file stdin (type quy ước là 2), trả về -1
+                    if (fileSystem->CheckopenF[id]->type == 1 || fileSystem->CheckopenF[id]->type == 2)
                     {
-                        printf("\nCannot write.");
-                        machine->WriteRegister(2, -1);
-                        IncreasePC();
-                        return;
+                        printf("\nCannot write."); // In thông báo lỗi
+                        machine->WriteRegister(2, -1); // Trả về -1 để báo lỗi
+                        IncreasePC(); // Tăng giá trị của thanh ghi PC
+                        return; // Kết thúc hàm
                     }
-                    OldPos = fileSystem->openf[id]->GetCurrentPos(); // Kiem tra thanh cong thi lay vi tri OldPos
-                    buf = User2System(address, charcount);  // Copy chuoi tu vung nho User Space sang System Space voi bo dem buffer dai charcount
-                    // Xet truong hop ghi file read & write (type quy uoc la 0) thi tra ve so byte thuc su
-                    if (fileSystem->openf[id]->type == 0)
+
+                    OldPos = fileSystem->CheckopenF[id]->GetCurrentPos(); // Lấy vị trí hiện tại của con trỏ đọc file
+
+                    buf = User2System(address, charcount); // Sao chép chuỗi từ không gian người dùng sang không gian hệ thống với buffer có kích thước là charcount
+
+                    // Xét trường hợp ghi vào file có quyền đọc và ghi (type quy ước là 0), trả về số byte thực sự ghi được
+                    if (fileSystem->CheckopenF[id]->type == 0)
                     {
-                        if ((fileSystem->openf[id]->Write(buf, charcount)) > 0)
+                        if ((fileSystem->CheckopenF[id]->Write(buf, charcount)) > 0)
                         {
-                            // So byte thuc su = NewPos - OldPos
-                            NewPos = fileSystem->openf[id]->GetCurrentPos();
-                            machine->WriteRegister(2, NewPos - OldPos);
-                            delete buf;
-                            IncreasePC();
-                            return;
+                            NewPos = fileSystem->CheckopenF[id]->GetCurrentPos(); // Lấy vị trí mới của con trỏ đọc file
+                            machine->WriteRegister(2, NewPos - OldPos); // Trả về số byte thực sự ghi được
+                            delete buf; // Giải phóng bộ nhớ đã cấp phát cho buf
+                            IncreasePC(); // Tăng giá trị của thanh ghi PC
+                            return; // Kết thúc hàm
                         }
                     }
-                    if (fileSystem->openf[id]->type == 3) // Xet truong hop con lai ghi file stdout (type quy uoc la 3)
+
+                    // Xét trường hợp ghi vào file stdout (type quy ước là 3)
+                    if (fileSystem->CheckopenF[id]->type == 3)
                     {
                         int i = 0;
-                        while (buf[i] != 0 && buf[i] != '\n') // Vong lap de write den khi gap ky tu '\n'
+                        while (buf[i] != 0 && buf[i] != '\n') // Vòng lặp ghi cho đến khi gặp ký tự '\n'
                         {
-                            gSynchConsole->Write(buf + i, 1); // Su dung ham Write cua lop SynchConsole 
+                            gSynchConsole->Write(buf + i, 1); // Sử dụng hàm Write của lớp SynchConsole để ghi ký tự
                             i++;
                         }
-                        buf[i] = '\n';
-                        gSynchConsole->Write(buf + i, 1); // Write ky tu '\n'
-                        machine->WriteRegister(2, i - 1); // Tra ve so byte thuc su write duoc
-                        delete buf;
-                        IncreasePC();
-                        return;
-                    }
+                        buf[i] = '\n'; // Ghi ký tự '\n' vào cuối chuỗi
+                        gSynchConsole->Write(buf + i, 1); // Ghi ký tự '\n'
+                        machine->WriteRegister(2, i - 1); // Trả về số byte thực sự ghi được
+                        delete buf; // Giải phóng bộ nhớ đã cấp phát cho buf
+                        IncreasePC(); // Tăng giá trị của thanh ghi PC
+                        return; // Kết thúc hàm
+
                 }
                 case SC_Close:
                 {
-                    int fileID = machine->ReadRegister(4); // Lay id cua file tu thanh ghi so 4
-                    if (fileID >= 0 && fileID <= 14) //Chi xu li khi fid nam trong [0, 14]
+                    int fileID = machine->ReadRegister(4); // Lấy id của file từ thanh ghi số 4
+
+                    if (fileID >= 0 && fileID <= 14) // Chỉ xử lí khi fileID nằm trong khoảng [0, 14]
                     {
-                        if (fileSystem->openf[fileID]) //neu mo file thanh cong
+                        if (fileSystem->CheckopenF[fileID]) // Nếu file đã mở thành công
                         {
-                            delete fileSystem->openf[fileID]; //Xoa vung nho luu tru file
-                            fileSystem->openf[fileID] = NULL; //Gan vung nho NULL
-                            machine->WriteRegister(2, 0);
-                            break;
+                            delete fileSystem->CheckopenF[fileID]; // Xóa vùng nhớ lưu trữ file
+                            fileSystem->CheckopenF[fileID] = NULL; // Gán vùng nhớ là NULL để đánh dấu file đã đóng
+                            machine->WriteRegister(2, 0); // Ghi 0 vào thanh ghi 2 để báo hiệu việc đóng file thành công
+                            break; // Thoát khỏi vòng lặp
                         }
                     }
-                    machine->WriteRegister(2, -1);
-                    IncreasePC();
-                    return;
+
+                    machine->WriteRegister(2, -1); // Nếu không thực hiện được việc đóng file, ghi -1 vào thanh ghi 2
+                    IncreasePC(); // Tăng giá trị của thanh ghi PC
+                    return; // Kết thúc hàm
                 }
                 case SC_WriteInt:
                 {
-                    
-                    int number = machine->ReadRegister(4);    // Lay gia tri can ghi(tham so number) tu thanh ghi so 4
-                    OpenFileID id = machine->ReadRegister(5); // Lay id cua file tu thanh ghi so 5
+                    int number = machine->ReadRegister(4); // Lấy giá trị cần ghi (tham số number) từ thanh ghi số 4
+                    OpenFileID id = machine->ReadRegister(5); // Lấy id của file từ thanh ghi số 5
                     int OldPos;
                     int NewPos;
 
-
                     char *buffer;
-                    int startPoint = 0; // Vi tri bat dau cua day so
-                    int numberOfNum = 1; // Bien de luu so chu so cua number
-                    int pw = 1; // so lon nhat ma number chia lay nguyen > 0 
+                    int startPoint = 0; // Vị trí bắt đầu của dãy số
+                    int numberOfNum = 1; // Biến để lưu số chữ số của number
+                    int pw = 1; // Số lớn nhất mà number chia lấy nguyên > 0
                     int MAX_BUFFER = 255;
                     buffer = new char[MAX_BUFFER + 1];
 
-
-                    // Kiem tra id cua file truyen vao co nam ngoai bang mo ta file khong
+                    // Kiểm tra xem id của file truyền vào có nằm ngoài bảng mô tả file không
                     if (id < 0 || id > 14)
                     {
-                        printf("\nCannot writing.");
-                        machine->WriteRegister(2, -1);
-                        IncreasePC();
-                        return;
+                        printf("\nCannot writing."); // In thông báo lỗi
+                        machine->WriteRegister(2, -1); // Ghi -1 vào thanh ghi 2 để báo lỗi
+                        IncreasePC(); // Tăng giá trị của thanh ghi PC
+                        return; // Kết thúc hàm
                     }
-                    // Kiem tra file co ton tai khong
-                    if (fileSystem->openf[id] == NULL)
+                    // Kiểm tra xem file có tồn tại không
+                    if (fileSystem->CheckopenF[id] == NULL)
                     {
-                        printf("\nCannot write.");
-                        machine->WriteRegister(2, -1);
-                        IncreasePC();
-                        return;
+                        printf("\nCannot write."); // In thông báo lỗi
+                        machine->WriteRegister(2, -1); // Ghi -1 vào thanh ghi 2 để báo lỗi
+                        IncreasePC(); // Tăng giá trị của thanh ghi PC
+                        return; // Kết thúc hàm
                     }
-                    // Xet truong hop ghi file only read (type quy uoc la 1) hoac file stdin (type quy uoc la 2) thi tra ve -1
-                    if (fileSystem->openf[id]->type == 1 || fileSystem->openf[id]->type == 2)
+                    // Xét trường hợp ghi vào file chỉ đọc (type quy ước là 1) hoặc file stdin (type quy ước là 2), trả về -1
+                    if (fileSystem->CheckopenF[id]->type == 1 || fileSystem->CheckopenF[id]->type == 2)
                     {
-                        printf("\nCannot write.");
-                        machine->WriteRegister(2, -1);
-                        IncreasePC();
-                        return;
+                        printf("\nCannot write."); // In thông báo lỗi
+                        machine->WriteRegister(2, -1); // Ghi -1 vào thanh ghi 2 để báo lỗi
+                        IncreasePC(); // Tăng giá trị của thanh ghi PC
+                        return; // Kết thúc hàm
                     }
-                    
 
+                    // Xử lý trường hợp số âm
                     if(number < 0)
                     {
-                        startPoint = 1;       // dich vi tri bat dau len 1 de ghi '-' vao vi tri 0
-                        number = number * -1; // Nham chuyen so am thanh so duong de tinh so chu so
-                    } 	
-                    
+                        startPoint = 1;       // Dịch vị trí bắt đầu lên 1 để ghi '-' vào vị trí 0
+                        number = number * -1; // Chuyển số âm thành số dương để tính số chữ số
+                    } 
+
+                    // Tính số lượng chữ số của số number
                     while(number / pw >= 10)
                     {
                         numberOfNum++;
                         pw *= 10;
                     }
-    
-		            // Tao buffer chuoi de in ra man hinh
 
+                    // Tạo buffer chuỗi để in ra màn hình
                     for(int offset = 0; offset < numberOfNum; offset++)
                     {
                         buffer[startPoint + offset] = (char)((number / pw) + 48);
                         number %= pw;
                         pw /= 10;
                     }
-                    if(startPoint > 0) buffer[0] = '-';
-                    buffer[startPoint + numberOfNum] = '\0';
+                    if(startPoint > 0) buffer[0] = '-'; // Nếu số âm, ghi '-' vào vị trí đầu tiên của buffer
+                    buffer[startPoint + numberOfNum] = '\0'; // Kết thúc chuỗi buffer
 
+                    OldPos = fileSystem->CheckopenF[id]->GetCurrentPos(); // Kiểm tra thành công thì lấy vị trí OldPos
 
-                    
-                    OldPos = fileSystem->openf[id]->GetCurrentPos(); // Kiem tra thanh cong thi lay vi tri OldPos
-                    // Xet truong hop ghi file read & write (type quy uoc la 0) thi tra ve so byte thuc su
-                    if (fileSystem->openf[id]->type == 0)
+                    // Xét trường hợp ghi vào file đọc và ghi (type quy ước là 0), trả về số byte thực sự ghi được
+                    if (fileSystem->CheckopenF[id]->type == 0)
                     {
-                        if ((fileSystem->openf[id]->Write(buffer, startPoint + numberOfNum)) > 0)
+                        if ((fileSystem->CheckopenF[id]->Write(buffer, startPoint + numberOfNum)) > 0)
                         {
-                            // So byte thuc su = NewPos - OldPos
-                            NewPos = fileSystem->openf[id]->GetCurrentPos();
+                            // Lấy vị trí mới của con trỏ đọc file
+                            NewPos = fileSystem->CheckopenF[id]->GetCurrentPos();
+                            // Kiểm tra xem số lượng byte ghi vào có vượt quá số lượng byte thực sự?
                             if (startPoint + numberOfNum > NewPos - OldPos)
-                                machine->WriteRegister(2, -1);
+                                machine->WriteRegister(2, -1); // Nếu vượt quá, ghi -1 vào thanh ghi 2
                             else 
-                                machine->WriteRegister(2, 0);
-                            delete buffer;
-                            IncreasePC();
-                            return;
+                                machine->WriteRegister(2, 0); // Nếu không, ghi 0 vào thanh ghi 2
+                            delete buffer; // Giải phóng bộ nhớ đã cấp phát cho buffer
+                            IncreasePC(); // Tăng giá trị của thanh ghi PC
+                            return; // Kết thúc hàm
                         }
                     }
-                    if (fileSystem->openf[id]->type == 3) // Xet truong hop con lai ghi file stdout (type quy uoc la 3)
+
+                    // Xét trường hợp ghi vào file stdout (type quy ước là 3)
+                    if (fileSystem->CheckopenF[id]->type == 3)
                     {
-                        gSynchConsole->Write(buffer, startPoint + numberOfNum); // Su dung ham Write cua lop SynchConsole 
-                        machine->WriteRegister(2, 0); 
-                        delete buffer;
-                        IncreasePC();
-                        return;
+                        gSynchConsole->Write(buffer, startPoint + numberOfNum); // Sử dụng hàm Write của lớp SynchConsole để ghi chuỗi buffer
+                        machine->WriteRegister(2, 0); // Ghi 0 vào thanh ghi 2
+                        delete buffer; // Giải phóng bộ nhớ đã cấp phát cho buffer
+                        IncreasePC(); // Tăng giá trị của thanh ghi PC
+                        return; // Kết thúc hàm
                     }
-                    machine->WriteRegister(2, -1);
+                    machine->WriteRegister(2, -1); // Nếu không thực hiện được việc ghi vào file, ghi -1 vào thanh ghi 2
                     delete buffer;
                     IncreasePC();
                     return;
@@ -759,7 +787,7 @@ void ExceptionHandler(ExceptionType which)
                     sprintf(buffer, "%f", *number);
 
 
-                    // Kiem tra id cua file truyen vao co nam ngoai bang mo ta file khong
+                    // Kiểm tra ID truyền vào
                     if (id < 0 || id > 14)
                     {
                         printf("\nCannot writing.");
@@ -767,8 +795,8 @@ void ExceptionHandler(ExceptionType which)
                         IncreasePC();
                         return;
                     }
-                    // Kiem tra file co ton tai khong
-                    if (fileSystem->openf[id] == NULL)
+                    //Kiểm tra sự tồn tại của file
+                    if (fileSystem->CheckopenF[id] == NULL)
                     {
                         printf("\nCannot write.");
                         machine->WriteRegister(2, -1);
@@ -776,7 +804,7 @@ void ExceptionHandler(ExceptionType which)
                         return;
                     }
                     // Xet truong hop ghi file only read (type quy uoc la 1) hoac file stdin (type quy uoc la 2) thi tra ve -1
-                    if (fileSystem->openf[id]->type == 1 || fileSystem->openf[id]->type == 2)
+                    if (fileSystem->CheckopenF[id]->type == 1 || fileSystem->CheckopenF[id]->type == 2)
                     {
                         printf("\nCannot write.");
                         machine->WriteRegister(2, -1);
@@ -784,19 +812,14 @@ void ExceptionHandler(ExceptionType which)
                         return;
                     }
                     
-
-
-
-
-                    
-                    OldPos = fileSystem->openf[id]->GetCurrentPos(); // Kiem tra thanh cong thi lay vi tri OldPos
+                    OldPos = fileSystem->CheckopenF[id]->GetCurrentPos(); // Kiem tra thanh cong thi lay vi tri OldPos
                     // Xet truong hop ghi file read & write (type quy uoc la 0) thi tra ve so byte thuc su
-                    if (fileSystem->openf[id]->type == 0)
+                    if (fileSystem->CheckopenF[id]->type == 0)
                     {
-                        if ((fileSystem->openf[id]->Write(buffer, strlen(buffer))) > 0)
+                        if ((fileSystem->CheckopenF[id]->Write(buffer, strlen(buffer))) > 0)
                         {
                             // So byte thuc su = NewPos - OldPos
-                            NewPos = fileSystem->openf[id]->GetCurrentPos();
+                            NewPos = fileSystem->CheckopenF[id]->GetCurrentPos();
                             if (strlen(buffer) > NewPos - OldPos)
                                 machine->WriteRegister(2, -1);
                             else 
@@ -806,7 +829,7 @@ void ExceptionHandler(ExceptionType which)
                             return;
                         }
                     }
-                    if (fileSystem->openf[id]->type == 3) // Xet truong hop con lai ghi file stdout (type quy uoc la 3)
+                    if (fileSystem->CheckopenF[id]->type == 3) // Xet truong hop con lai ghi file stdout (type quy uoc la 3)
                     {
                         gSynchConsole->Write(buffer, strlen(buffer)); // Su dung ham Write cua lop SynchConsole 
                         machine->WriteRegister(2, 0); 
@@ -824,13 +847,5 @@ void ExceptionHandler(ExceptionType which)
             }
             IncreasePC();
         }
-
-        // if ((which == SyscallException) && (type == SC_Halt)) {
-	    //     DEBUG('a', "Shutdown, initiated by user program.\n");
-   	    //     interrupt->Halt();
-        // } else {
-	    //     printf("Unexpected user mode exception %d %d\n", which, type);
-	    //     ASSERT(FALSE);
-        // }
     }
 }

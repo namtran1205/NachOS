@@ -9,13 +9,14 @@ int st[200];
 
 int main()
 {
-    int swapTmp;
+    int stEnd;              // vi tri ket thuc cua stack(hoac kich thuoc hien thoi cua phan stack dang duoc su dung)
     int i;  
-    int n;
-    int stEnd;
+    int n;                  // so phan tu cua mang 
     OpenFileID fileID; 
 
 
+    // cac bien cho thuat toan mergesort
+    int swapTmp;
     int begin, end, mid;
     int itL;
     int leftSize;
@@ -121,9 +122,6 @@ int main()
 
 
 
-
-
-
     // ==========================================================
     //                  xuat du lieu sang file
     // ==========================================================
@@ -151,8 +149,7 @@ int main()
 
     Close(fileID);
     for(i = 0; i < n; i++) FreeFloat(arr[i]);
-    
-    Halt();
+
 
     return 0;
 }
