@@ -1,11 +1,11 @@
 #include "syscall.h"
 #include "copyright.h"
 
-float* arr[10];
-float* leftArr[6];
-float* rightArr[6];
+float* arr[100];
+float* leftArr[51];
+float* rightArr[51];
 
-int st[25];
+int st[200];
 
 int main()
 {

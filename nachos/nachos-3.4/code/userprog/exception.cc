@@ -365,6 +365,7 @@ void ExceptionHandler(ExceptionType which)
                     sprintf(buffer, "%f", *number);
                     //gSynchConsole->Write("The float number you typed: ", strlen("The float number you typed: ") + 1);
                     gSynchConsole->Write(buffer, strlen(buffer) + 1); // Print number to console
+                    delete buffer;
                     IncreasePC();
                     return;
                 }

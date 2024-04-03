@@ -1,7 +1,7 @@
 #include "syscall.h"
 #include "copyright.h"
-int arr[10];
-int st[30];
+int arr[100];
+int st[300];
 
 int main()
 {
