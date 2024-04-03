@@ -43,7 +43,7 @@
 				// implementation is available
 class FileSystem {
   public:
-	OpenFile** openf; //De kiem tra xem file co dang mo khong
+	OpenFile** CheckopenF; //De kiem tra xem file co dang mo khong
     int index;
 
 	OpenFile* Open(char *name) {
@@ -76,16 +76,16 @@ class FileSystem {
 
     //Dinh nghia lai ham khoi tao cua FileSystem
     FileSystem(bool format) {
-    	openf = new OpenFile*[15];
+    	CheckopenF = new OpenFile*[15];
     	index = 0;
     	for (int i = 0; i < 15; ++i)
     	{
-    	    openf[i] = NULL;
+    	    CheckopenF[i] = NULL;
     	}
     	this->Create("stdin", 0);
     	this->Create("stdout", 0);
-    	openf[index++] = this->Open("stdin", 2);
-    	openf[index++] = this->Open("stdout", 3);
+    	CheckopenF[index++] = this->Open("stdin", 2);
+    	CheckopenF[index++] = this->Open("stdout", 3);
     }
 
     //Ham huy doi tuong FileSystem
@@ -93,9 +93,9 @@ class FileSystem {
     {
         for (int i = 0; i < 15; ++i)
         {
-            if (openf[i] != NULL) delete openf[i];
+            if (CheckopenF[i] != NULL) delete CheckopenF[i];
         }
-        delete[] openf;
+        delete[] CheckopenF;
     }
 
     bool Create(char *name, int initialSize) { 
@@ -112,7 +112,7 @@ class FileSystem {
     {
         for(int i = 2; i < 15; i++)
         {
-            if(openf[i] == NULL) return i;
+            if(CheckopenF[i] == NULL) return i;
         }
         return -1;
     }
@@ -122,7 +122,7 @@ class FileSystem {
 #else // FILESYS
 class FileSystem {
   public:
-	OpenFile** openf;
+	OpenFile** CheckopenF;
     int index;
 
     FileSystem(bool format);		// Initialize the file system.
@@ -155,7 +155,7 @@ class FileSystem {
     {
         for(int i = 2; i < 15; i++)
         {
-            if(openf[i] == NULL) return i;
+            if(CheckopenF[i] == NULL) return i;
         }
         return -1;
     }
