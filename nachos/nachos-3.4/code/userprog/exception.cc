@@ -493,7 +493,7 @@ void ExceptionHandler(ExceptionType which)
                         if (type == 0 || type == 1) // Chỉ xử lí khi type là 0 hoặc 1
                         {
                             // Mở tập tin với tên là filename và type là type
-                            if ((fileSystem->openf[freeSlot] = fileSystem->Open(filename, type)) != NULL) // Mở tập tin thành công
+                            if ((fileSystem->CheckopenF[freeSlot] = fileSystem->Open(filename, type)) != NULL) // Mở tập tin thành công
                             {
                                 machine->WriteRegister(2, freeSlot); // Trả về OpenFileID
                             }
@@ -651,12 +651,14 @@ void ExceptionHandler(ExceptionType which)
                             gSynchConsole->Write(buf + i, 1); // Sử dụng hàm Write của lớp SynchConsole để ghi ký tự
                             i++;
                         }
+                        
                         buf[i] = '\n'; // Ghi ký tự '\n' vào cuối chuỗi
                         gSynchConsole->Write(buf + i, 1); // Ghi ký tự '\n'
                         machine->WriteRegister(2, i - 1); // Trả về số byte thực sự ghi được
                         delete buf; // Giải phóng bộ nhớ đã cấp phát cho buf
                         IncreasePC(); // Tăng giá trị của thanh ghi PC
                         return; // Kết thúc hàm
+                    }
 
                 }
                 case SC_Close:
