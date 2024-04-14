@@ -870,7 +870,8 @@ void ExceptionHandler(ExceptionType which)
                     {
                         
                         delete[] fileName;
-                        IncreasePC()
+                        IncreasePC();
+                        return;
                     }
 
 
@@ -910,7 +911,7 @@ void ExceptionHandler(ExceptionType which)
                     int semval = machine->ReadRegister(5);
 
                     // Chuyển địa chỉ ảo thành không gian hệ thống cho tên semaphore
-                    char *name = User2System(virtAddr, MaxFileLength + 1);
+                    char *name = User2System(virtAddr, 255);
 
                     // Kiểm tra nếu không đủ bộ nhớ để cấp phát cho biến name
                     if (name == NULL) {
@@ -947,7 +948,7 @@ void ExceptionHandler(ExceptionType which)
                     int virtualAddress = machine->ReadRegister(4);
 
                     // Chuyển đổi địa chỉ ảo thành tên semaphore trong hệ thống
-                    char *semaphoreName = User2System(virtualAddress, MaxFileLength + 1);
+                    char *semaphoreName = User2System(virtualAddress, 255);
 
                     // Kiểm tra xem việc chuyển đổi có thành công không
                     if (semaphoreName == NULL) {
@@ -956,7 +957,7 @@ void ExceptionHandler(ExceptionType which)
                         printf("\n Not enough memory in the system");
                         machine->WriteRegister(2, -1);
                         IncreasePC();
-                        return -1;
+                        return;
                     }
 
                     // Gọi hàm Signal của SemaphoreTable để thực hiện phát tín hiệu cho semaphore
@@ -969,14 +970,14 @@ void ExceptionHandler(ExceptionType which)
                         machine->WriteRegister(2, -1);
                         delete[] semaphoreName;
                         IncreasePC();
-                        return -1;
+                        return;
                     }
 
                     // Ghi kết quả vào thanh ghi 2 của máy và tăng chương trình tiếp tục thực thi
                     delete[] semaphoreName;
                     machine->WriteRegister(2, result);
                     IncreasePC();
-                    return result;
+                    return;
                 }
                 case SC_Down:
                 {
@@ -984,7 +985,7 @@ void ExceptionHandler(ExceptionType which)
                     int virtualAddress = machine->ReadRegister(4);
 
                     // Chuyển đổi địa chỉ ảo thành tên semaphore trong hệ thống
-                    char *semaphoreName = User2System(virtualAddress, MaxFileLength + 1);
+                    char *semaphoreName = User2System(virtualAddress, 255);
 
                     // Kiểm tra xem việc chuyển đổi có thành công không
                     if (semaphoreName == NULL) {
@@ -993,7 +994,7 @@ void ExceptionHandler(ExceptionType which)
                         printf("\n Not enough memory in the system");
                         machine->WriteRegister(2, -1);
                         IncreasePC();
-                        return -1;
+                        return;
                     }
 
                     // Gọi hàm Wait của SemaphoreTable để thực hiện chờ đợi cho semaphore
@@ -1006,14 +1007,14 @@ void ExceptionHandler(ExceptionType which)
                         machine->WriteRegister(2, -1);
                         delete[] semaphoreName;
                         IncreasePC();
-                        return -1;
+                        return;
                     }
 
                     // Ghi kết quả vào thanh ghi 2 của máy và tăng chương trình tiếp tục thực thi
                     delete[] semaphoreName;
                     machine->WriteRegister(2, result);
                     IncreasePC();
-                    return result;
+                    return;
                 }
                 default:
                     break;

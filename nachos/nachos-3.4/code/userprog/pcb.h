@@ -32,17 +32,20 @@ public:
     void SetFileName(char* fn);             // Đặt tên của tiến trình
     char* GetFileName();                    // Trả về tên của tiến trình
 
+    char* GetNameThread();
+    
 private:
     Semaphore* joinsem;                     // semaphore cho quá trình join
     Semaphore* exitsem;                     // semaphore cho quá trình exit
-    Semaphore* multex;                      // semaphore cho quá trình truy xuất đọc quyền
+    Semaphore* mutex;                      // semaphore cho quá trình truy xuất đọc quyền
 
     int exitcode;
     int numwait;                            // số tiến trình đã join
-
+    int pid;
+    int		JoinStatus;
     char processname[32];                   // Tên tiến trình
 
     Thread* thread;
-}
+};
 
-#endif // PCB_H
+#endif
