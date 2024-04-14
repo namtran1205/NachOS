@@ -27,6 +27,6 @@ public:
 private:
     char name[50];      
     Semaphore* sem;     // Tạo semaphore để quản lý
-}
+};
 
 #endif // SEM_H

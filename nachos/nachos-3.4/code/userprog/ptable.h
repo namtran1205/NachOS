@@ -26,6 +26,6 @@ private:
     PCB* pcb[MAX_PROCESS];
     int psize;
     Semaphore* bmsem;                   // dùng để ngăn chặn trường hợp nạp 2 tiến trình cùng một lúc
-}
+};
 
 #endif // PTABLE_H

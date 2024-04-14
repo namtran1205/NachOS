@@ -195,7 +195,7 @@ int WriteFloat(float* number, OpenFileID id);
 int CreateSemaphore(char* name, int semval);
 
 /* Use class STable to free wating process */
-int Up(char* name)
+int Up(char* name);
 
 /* Use class Stable to make a process wait */
 int Down(char* name);
