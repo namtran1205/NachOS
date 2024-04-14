@@ -7,9 +7,10 @@
 class PCB {
 public:
     int parentID;
+    char boolBG;
 
     PCB();
-    PCB(int id);
+    PCB(int id = 0);
     ~PCB();
 
     // nạp chương trình có tên lưu trong biến filename và processID là pid
@@ -35,8 +36,13 @@ private:
     Semaphore* joinsem;                     // semaphore cho quá trình join
     Semaphore* exitsem;                     // semaphore cho quá trình exit
     Semaphore* multex;                      // semaphore cho quá trình truy xuất đọc quyền
+
     int exitcode;
     int numwait;                            // số tiến trình đã join
+
+    char processname[32];                   // Tên tiến trình
+
+    Thread* thread;
 }
 
 #endif // PCB_H

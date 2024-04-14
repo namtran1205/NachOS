@@ -83,13 +83,22 @@ AddrSpace::AddrSpace(OpenFile *executable)
 						// at least until we have
 						// virtual memory
 
+    if(numPages > gPhysPageBitMap->NumClear())
+    {
+	    printf("\nAddrSpace::Load : not enough memory for new process..!");
+	    numPages = 0;
+	    delete executable;
+	    addrLock->V();
+        return;
+    }
+
     DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
 					numPages, size);
 // first, set up the translation 
     pageTable = new TranslationEntry[numPages];
     for (i = 0; i < numPages; i++) {
 	pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
-	pageTable[i].physicalPage = i;
+	pageTable[i].physicalPage = gPhysPageBitMap->Find(); 
 	pageTable[i].valid = TRUE;
 	pageTable[i].use = FALSE;
 	pageTable[i].dirty = FALSE;

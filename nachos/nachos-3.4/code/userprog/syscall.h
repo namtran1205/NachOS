@@ -19,29 +19,32 @@
  * is being asked for
  */
 
-#define SC_Halt		    0
-#define SC_Exit		    1
-#define SC_Exec		    2
-#define SC_Join		    3
-#define SC_Create   	4
-#define SC_Open		    5
-#define SC_Read		    6
-#define SC_Write	    7
-#define SC_Close	    8
-#define SC_Fork		    9
-#define SC_Yield	    10
-#define SC_ReadInt	    11
-#define SC_PrintInt	    12
-#define SC_ReadFloat    13
-#define SC_PrintFloat   14
-#define SC_FreeFloat    15
-#define SC_CompareFPs   16
-#define SC_ReadChar 	17
-#define SC_PrintChar    18
-#define SC_ReadString   19
-#define SC_PrintString  20
-#define SC_WriteInt     21
-#define SC_WriteFloat   22
+#define SC_Halt		        0
+#define SC_Exit		        1
+#define SC_Exec		        2
+#define SC_Join		        3
+#define SC_Create   	    4
+#define SC_Open		        5
+#define SC_Read		        6
+#define SC_Write	        7
+#define SC_Close	        8
+#define SC_Fork		        9
+#define SC_Yield	        10
+#define SC_ReadInt	        11
+#define SC_PrintInt	        12
+#define SC_ReadFloat        13
+#define SC_PrintFloat       14
+#define SC_FreeFloat        15
+#define SC_CompareFPs       16
+#define SC_ReadChar 	    17
+#define SC_PrintChar        18
+#define SC_ReadString       19
+#define SC_PrintString      20
+#define SC_WriteInt         21
+#define SC_WriteFloat       22
+#define SC_CreateSemaphore  23
+#define SC_Up               24    
+#define SC_Down             25
 
 #ifndef IN_ASM
 
@@ -188,8 +191,16 @@ int WriteInt(int number, OpenFileID id);
  *                  0 for success */
 int WriteFloat(float* number, OpenFileID id);
 
+/* Create a new Semaphore */
+int CreateSemaphore(char* name, int semval);
 
-// int Sub(int a, int b);
+/* Use class STable to free wating process */
+int Up(char* name)
+
+/* Use class Stable to make a process wait */
+int Down(char* name);
+
+
 #endif /* IN_ASM */
 
 #endif /* SYSCALL_H */
