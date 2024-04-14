@@ -31,14 +31,15 @@ extern Interrupt *interrupt;			// interrupt status
 extern Statistics *stats;			// performance metrics
 extern Timer *timer;				// the hardware alarm clock
 
-extern Semaphore* addrlock;
-extern BitMap* gPhysPageBitMap;
 
 #ifdef USER_PROGRAM
 #include "machine.h"
 #include "synchcons.h"
 extern Machine* machine;	// user program memory and registers
 extern SynchConsole* gSynchConsole;
+
+extern Semaphore* addrlock;
+extern BitMap* gPhysPageBitMap;
 #endif
 
 #ifdef FILESYS_NEEDED 		// FILESYS or FILESYS_STUB 
