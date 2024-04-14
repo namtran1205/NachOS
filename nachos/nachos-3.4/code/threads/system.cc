@@ -19,6 +19,9 @@ Statistics *stats;			// performance metrics
 Timer *timer;				// the hardware timer device,
 					// for invoking context switches
 
+Semaphore* addrLock;
+BitMap* gPhysPageBitMap;
+
 #ifdef FILESYS_NEEDED
 FileSystem  *fileSystem;
 #endif
@@ -34,6 +37,14 @@ SynchConsole* gSynchConsole;
 
 #ifdef NETWORK
 PostOffice *postOffice;
+#endif
+
+#ifdef STABLE_H
+STable* semTab;
+#endif
+
+#ifdef PTABLE_H
+PTable* pTab;
 #endif
 
 
@@ -82,17 +93,17 @@ Initialize(int argc, char **argv)
     char* debugArgs = "";
     bool randomYield = FALSE;
 
-#ifdef USER_PROGRAM
-    bool debugUserProg = FALSE;	// single step user program
-#endif
-#ifdef FILESYS_NEEDED
-    bool format = FALSE;	// format disk
-#endif
-#ifdef NETWORK
-    double rely = 1;		// network reliability
-    int netname = 0;		// UNIX socket name
-#endif
-    
+    #ifdef USER_PROGRAM
+        bool debugUserProg = FALSE;	// single step user program
+    #endif
+    #ifdef FILESYS_NEEDED
+        bool format = FALSE;	// format disk
+    #endif
+    #ifdef NETWORK
+        double rely = 1;		// network reliability
+        int netname = 0;		// UNIX socket name
+    #endif
+
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {
 	argCount = 1;
 	if (!strcmp(*argv, "-d")) {
@@ -109,25 +120,25 @@ Initialize(int argc, char **argv)
 	    randomYield = TRUE;
 	    argCount = 2;
 	}
-#ifdef USER_PROGRAM
-	if (!strcmp(*argv, "-s"))
-	    debugUserProg = TRUE;
-#endif
-#ifdef FILESYS_NEEDED
-	if (!strcmp(*argv, "-f"))
-	    format = TRUE;
-#endif
-#ifdef NETWORK
-	if (!strcmp(*argv, "-l")) {
-	    ASSERT(argc > 1);
-	    rely = atof(*(argv + 1));
-	    argCount = 2;
-	} else if (!strcmp(*argv, "-m")) {
-	    ASSERT(argc > 1);
-	    netname = atoi(*(argv + 1));
-	    argCount = 2;
-	}
-#endif
+    #ifdef USER_PROGRAM
+    	if (!strcmp(*argv, "-s"))
+    	    debugUserProg = TRUE;
+    #endif
+    #ifdef FILESYS_NEEDED
+    	if (!strcmp(*argv, "-f"))
+    	    format = TRUE;
+    #endif
+    #ifdef NETWORK
+    	if (!strcmp(*argv, "-l")) {
+    	    ASSERT(argc > 1);
+    	    rely = atof(*(argv + 1));
+    	    argCount = 2;
+    	} else if (!strcmp(*argv, "-m")) {
+    	    ASSERT(argc > 1);
+    	    netname = atoi(*(argv + 1));
+    	    argCount = 2;
+    	}
+    #endif
     }
 
     DebugInit(debugArgs);			// initialize DEBUG messages
@@ -145,25 +156,36 @@ Initialize(int argc, char **argv)
     currentThread = new Thread("main");		
     currentThread->setStatus(RUNNING);
 
+    addrLock = new Semaphore("Address Lock", 1);
+    gPhysPageBitMap = new BitMap(32);
+
     interrupt->Enable();
     CallOnUserAbort(Cleanup);			// if user hits ctl-C
     
-#ifdef USER_PROGRAM
-    machine = new Machine(debugUserProg);	// this must come first
-    gSynchConsole = new SynchConsole();
-#endif
+    #ifdef USER_PROGRAM
+        machine = new Machine(debugUserProg);	// this must come first
+        gSynchConsole = new SynchConsole();
+    #endif
 
-#ifdef FILESYS
-    synchDisk = new SynchDisk("DISK");
-#endif
+    #ifdef FILESYS
+        synchDisk = new SynchDisk("DISK");
+    #endif
 
-#ifdef FILESYS_NEEDED
-    fileSystem = new FileSystem(format);
-#endif
+    #ifdef FILESYS_NEEDED
+        fileSystem = new FileSystem(format);
+    #endif
 
-#ifdef NETWORK
-    postOffice = new PostOffice(netname, rely, 10);
-#endif
+    #ifdef NETWORK
+        postOffice = new PostOffice(netname, rely, 10);
+    #endif
+
+    #ifdef STABLE_H
+        semTab = new STable();
+    #endif
+
+    #ifdef PTABLE_H
+        pTab = new PTable(10);
+    #endif
 }
 
 //----------------------------------------------------------------------
@@ -174,22 +196,31 @@ void
 Cleanup()
 {
     printf("\nCleaning up...\n");
-#ifdef NETWORK
-    delete postOffice;
-#endif
-    
-#ifdef USER_PROGRAM
-    delete machine;
-    delete gSynchConsole;
-#endif
 
-#ifdef FILESYS_NEEDED
-    delete fileSystem;
-#endif
+    #ifdef NETWORK
+        delete postOffice;
+    #endif
 
-#ifdef FILESYS
-    delete synchDisk;
-#endif
+    #ifdef USER_PROGRAM
+        delete machine;
+        delete gSynchConsole;
+    #endif
+
+    #ifdef FILESYS_NEEDED
+        delete fileSystem;
+    #endif
+
+    #ifdef FILESYS
+        delete synchDisk;
+    #endif
+
+    #ifdef STABLE_H
+        delete semTab;
+    #endif
+
+    #ifdef PTABLE_H
+        delete pTab;
+    #endif
     
     delete timer;
     delete scheduler;
