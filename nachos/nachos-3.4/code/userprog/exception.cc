@@ -927,8 +927,8 @@ void ExceptionHandler(ExceptionType which)
 
                     // Xử lý khi không thể tạo semaphore
                     if (result == -1) {
-                        DEBUG('a', "\n Can not create semaphore");
-                        printf("\n Can not create semaphore");
+                        DEBUG('a', "\n Cannot create semaphore");
+                        printf("\n Cannot create semaphore");
                         machine->WriteRegister(2, -1);
                         delete[] name;
                         IncreasePC();
@@ -946,6 +946,8 @@ void ExceptionHandler(ExceptionType which)
                 {
                     // Đọc địa chỉ ảo từ thanh ghi 4 của máy
                     int virtualAddress = machine->ReadRegister(4);
+
+                    int semaphoreValue = machine->ReadRegister(5);
 
                     // Chuyển đổi địa chỉ ảo thành tên semaphore trong hệ thống
                     char *semaphoreName = User2System(virtualAddress, 255);
@@ -983,6 +985,8 @@ void ExceptionHandler(ExceptionType which)
                 {
                     // Đọc địa chỉ ảo từ thanh ghi 4 của máy
                     int virtualAddress = machine->ReadRegister(4);
+
+                    int semaphoreValue = machine->ReadRegister(5);
 
                     // Chuyển đổi địa chỉ ảo thành tên semaphore trong hệ thống
                     char *semaphoreName = User2System(virtualAddress, 255);

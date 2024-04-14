@@ -9,6 +9,7 @@ Stable::Stable()
 	{
 		this->semTab[i] = NULL;
 	}
+	bm->Mark(0);
 }
 
 Stable::~Stable()
