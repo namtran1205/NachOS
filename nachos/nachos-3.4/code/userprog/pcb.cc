@@ -5,6 +5,9 @@
 #include "addrspace.h"
 
 
+char* file_name;
+
+void MyStartProcess(int pID);
 
 
 PCB::PCB()
@@ -62,13 +65,17 @@ void PCB::SetExitCode(int ec)
 
 void PCB::IncNumWait()
 {
+	mutex->Acquire();
 	numwait++;
+	mutex->Release();
 }
 
 void PCB::DecNumWait()
 {
+	mutex->Acquire();
 	if(numwait)
 		numwait--;
+	mutex->Release();
 }
 
 char* PCB::GetNameThread()
@@ -80,41 +87,51 @@ char* PCB::GetNameThread()
 //-------------------------------------------------------------------
 void PCB::JoinWait()
 {
-	JoinStatus= parentID;
-	IncNumWait();
-	joinsem->P();
+	joinsem->Acquire();
+	printf("pcb.cc - JoinWait line 88 joinsem->Acquire() successfully\n");
 }
 
 void PCB::JoinRelease()
 {
-	DecNumWait();
-	joinsem->V();
+	joinsem->Release();
 }
 
 void PCB::ExitWait()
 {
-	exitsem->P();
+	exitsem->Acquire();
 }
 
 void PCB::ExitRelease()
 {
-	exitsem->V();
+	exitsem->Release();
 }
 
 //------------------------------------------------------------------
 int PCB::Exec(char *filename, int pID)
 {
-	mutex->P();
+	mutex->Acquire();
+	printf("pcb.cc line 111 filename : %s\n", filename);
 	thread= new Thread(filename);
 	if(thread == NULL)
 	{
 		printf("\nLoi: Khong tao duoc tien trinh moi !!!\n");
-		mutex->V();
+		mutex->Release();
 		return -1;
 	}
 	thread->processID = pID;
+	printf("pcb.cc line 120 pID = %d\n", pID);
+	parentID = currentThread->processID;
+
+	file_name = new char[255];
+	for (int i = 0; i < strlen(filename); i++) {
+		file_name[i] = filename[i];
+	}
+	printf("pcb.cc line 129 file_name: %s\n", file_name);
+
 	thread->Fork(MyStartProcess, pID);
-	mutex->V();
+
+	delete file_name;
+	mutex->Release();
 	return pID;
 }
 
@@ -132,8 +149,10 @@ char* PCB::GetFileName()
 //*************************************************************************************
 void MyStartProcess(int pID)
 {
-	char *filename = pTab->GetName(pID);
-	AddrSpace *space= new AddrSpace(filename);
+	printf("pcb.cc line 141 pID = %d\n", pID);
+	char *filename = pTab->GetFileName(pID);
+	printf("pcb.cc line 140 filename : %s\n", file_name);
+	AddrSpace *space= new AddrSpace(file_name);
 	if(space == NULL)
 	{
 		printf("\nLoi: Khong du bo nho de cap phat cho tien trinh !!!\n");

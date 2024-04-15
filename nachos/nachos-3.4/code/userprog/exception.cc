@@ -849,9 +849,10 @@ void ExceptionHandler(ExceptionType which)
                 {
                     // Đọc ID từ thanh ghi 4 của máy
                     int userId = machine->ReadRegister(4);
-
+                    printf("SC_JOIN line 852 userId = %d\n", userId);
                     // Thực hiện hoạt động cập nhật tham gia bằng cách sử dụng ID đã thu được
                     int joinResult = pTab->JoinUpdate(userId);
+                    printf("SC_Join line 855: joinResult = %d\n", joinResult);
 
                     // Ghi kết quả của hoạt động tham gia vào thanh ghi 2
                     machine->WriteRegister(2, joinResult);
@@ -863,22 +864,42 @@ void ExceptionHandler(ExceptionType which)
                 }
                 case SC_Exec:
                 {
-                    int userAddr = machine->ReadRegister(4);
-                    char *fileName = User2System(userAddr, 255);
+                    // Input: vi tri int
+			        // Output: Fail return -1, Success: return id cua thread dang chay
+			        // SpaceId Exec(char *name);
+			        int virtAddr;
+			        virtAddr = machine->ReadRegister(4);	// doc dia chi ten chuong trinh tu thanh ghi r4
+			        char* name;
+			        name = User2System(virtAddr, 255 + 1); // Lay ten chuong trinh, nap vao kernel
+                    gSynchConsole->Write(name, strlen(name) + 1);
+                    gSynchConsole->Write("\n", strlen("\n") + 1);
+			        if(name == NULL)
+			        {
+			        	DEBUG('a', "\n Not enough memory in System");
+			        	printf("\n Not enough memory in System");
+			        	machine->WriteRegister(2, -1);
+			        	IncreasePC();
+			        	return;
+			        }
+			        OpenFile *oFile = fileSystem->Open(name);
+			        if (oFile == NULL)
+			        {
+			        	printf("\nExec:: Can't open this file.");
+                        printf("exception.cc SC_EXEC open file ???? \n");
+			        	machine->WriteRegister(2,-1);
+			        	IncreasePC();
+			        	return;
+			        }
 
-                    OpenFile *file = fileSystem->Open(fileName);
-                    if (file == NULL)
-                    {
-                        
-                        delete[] fileName;
-                        IncreasePC();
-                        return;
-                    }
+			        delete oFile;
 
+			        // Return child process id
+			        int id = pTab->ExecUpdate(name); 
+			        machine->WriteRegister(2,id);
 
-                    delete[] fileName;
-                    IncreasePC();
-                    break;
+			        delete[] name;	
+			        IncreasePC();
+			        return;
                 }
                 case SC_Exit:
                 {

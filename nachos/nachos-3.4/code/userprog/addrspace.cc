@@ -79,7 +79,7 @@ SwapHeader (NoffHeader *noffH)
 //     	SwapHeader(&noffH);
 //     ASSERT(noffH.noffMagic == NOFFMAGIC);
   
-//  	addrLock->P();
+//  	addrLock->Acquire();
 
 // 	// how big is address space?
 //     size = noffH.code.size + noffH.initData.size + noffH.uninitData.size 
@@ -99,7 +99,7 @@ SwapHeader (NoffHeader *noffH)
 // 	    printf("\nAddrSpace::Load : not enough memory for new process");
 // 	    numPages = 0;
 // 	    delete executable;
-// 	    addrLock->V();
+// 	    addrLock->Release();
 //         return
 //     }
 
@@ -121,7 +121,7 @@ SwapHeader (NoffHeader *noffH)
 //         printf("Physic Pages %d \n", pageTable[i].physicalPage);
 //     }
 
-//     addrLock->V();
+//     addrLock->Release();
 
 //     // then, copy in the code and data segments into memory
 //     if (noffH.code.size > 0)
@@ -140,7 +140,7 @@ SwapHeader (NoffHeader *noffH)
 
 // }
 
-
+/*
 AddrSpace::AddrSpace(OpenFile *executable)
 {
     NoffHeader noffH;
@@ -361,6 +361,246 @@ AddrSpace::~AddrSpace()
 		gPhysPageBitMap->Clear(pageTable[i].physicalPage);
 	delete pageTable;
 }
+//----------------------------------------------------------------------
+// AddrSpace::InitRegisters
+// 	Set the initial values for the user-level register set.
+//
+// 	We write these directly into the "machine" registers, so
+//	that we can immediately jump to user code.  Note that these
+//	will be saved/restored into the currentThread->userRegisters
+//	when this thread is context switched out.
+//----------------------------------------------------------------------
+
+void
+AddrSpace::InitRegisters()
+{
+    int i;
+
+    for (i = 0; i < NumTotalRegs; i++)
+	machine->WriteRegister(i, 0);
+
+    // Initial program counter -- must be location of "Start"
+    machine->WriteRegister(PCReg, 0);	
+
+    // Need to also tell MIPS where next instruction is, because
+    // of branch delay possibility
+    machine->WriteRegister(NextPCReg, 4);
+
+   // Set the stack register to the end of the address space, where we
+   // allocated the stack; but subtract off a bit, to make sure we don't
+   // accidentally reference off the end!
+    machine->WriteRegister(StackReg, numPages * PageSize - 16);
+    DEBUG('a', "Initializing stack register to %d\n", numPages * PageSize - 16);
+}
+
+//----------------------------------------------------------------------
+// AddrSpace::SaveState
+// 	On a context switch, save any machine state, specific
+//	to this address space, that needs saving.
+//
+//	For now, nothing!
+//----------------------------------------------------------------------
+
+void AddrSpace::SaveState() 
+{}
+
+//----------------------------------------------------------------------
+// AddrSpace::RestoreState
+// 	On a context switch, restore the machine state so that
+//	this address space can run.
+//
+//      For now, tell the machine where to find the page table.
+//----------------------------------------------------------------------
+
+void AddrSpace::RestoreState() 
+{
+    machine->pageTable = pageTable;
+    machine->pageTableSize = numPages;
+}
+*/
+
+AddrSpace::AddrSpace(OpenFile *executable)
+{
+    NoffHeader noffH;
+    unsigned int i, size;
+
+    if (executable == NULL)
+    {
+    	printf("Unable to open file %s\n");
+        printf("addrspace.cc line 430 Really ?????");
+	    return ;
+    }
+
+    executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
+    if ((noffH.noffMagic != NOFFMAGIC) && (WordToHost(noffH.noffMagic) == NOFFMAGIC))
+    	SwapHeader(&noffH);
+
+    ASSERT(noffH.noffMagic == NOFFMAGIC);
+  
+    addrLock->Acquire();
+
+    // how big is address space?
+    size = noffH.code.size + noffH.initData.size + noffH.uninitData.size 
+			+ UserStackSize;	// we need to increase the size
+						// to leave room for the stack
+    numPages = divRoundUp(size, PageSize);
+    size = numPages * PageSize;
+  
+    // Check we're not trying to run anything too big
+    // At least until we have virtual memory
+    ASSERT(numPages <= NumPhysPages);
+
+    if(numPages > gPhysPageBitMap->NumClear())
+    {
+	    printf("\nAddrSpace::Load : not enough memory for new process..!");
+	    numPages = 0;
+	    delete executable;
+	    addrLock->Release();
+        return;
+    }
+
+    DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
+					numPages, size);
+    
+    // first, set up the translation 
+    pageTable = new TranslationEntry[numPages];
+    for (i = 0; i < numPages; i++)
+    {
+	// for now, virtual page # = phys page #
+	pageTable[i].virtualPage = i;
+
+	pageTable[i].physicalPage = gPhysPageBitMap->Find();
+
+	pageTable[i].valid = TRUE;
+	pageTable[i].use = FALSE;
+	pageTable[i].dirty = FALSE;
+	pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
+					// a separate page, we could set its 
+					// pages to be read-only
+    }
+    
+     addrLock->Release();
+
+    if (noffH.code.size > 0)
+    {
+	for(i = 0; i < numPages ; i++)
+	        executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr]) + (pageTable[i].physicalPage*PageSize),PageSize,noffH.code.inFileAddr + (i*PageSize));
+    }
+
+    if (noffH.initData.size > 0)
+    {
+	for(i = 0 ; i < numPages ; i++)
+	        executable->ReadAt(&(machine->mainMemory[noffH.initData.virtualAddr]) + (pageTable[i].physicalPage*PageSize),PageSize, noffH.initData.inFileAddr+(i*PageSize));
+    }	
+
+//   delete executable;
+}
+
+// =========================================================================
+// Modified
+// =========================================================================
+AddrSpace::AddrSpace(char* filename)
+{
+    NoffHeader noffH;
+    unsigned int i, size;
+
+    printf("addrspace line 507: filename = %s\n", filename);
+    OpenFile* executable = fileSystem->Open(filename);
+
+    if (executable == NULL)
+    {
+    	printf("Unable to open file %s\n", filename);
+        printf("addrspace.cc line 512 File name?????");
+	    return;
+    }
+
+    executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
+    if ((noffH.noffMagic != NOFFMAGIC) && 
+	(WordToHost(noffH.noffMagic) == NOFFMAGIC))
+    	SwapHeader(&noffH);
+    ASSERT(noffH.noffMagic == NOFFMAGIC);
+  
+ 	addrLock->Acquire();
+
+	// how big is address space?
+    size = noffH.code.size + noffH.initData.size + noffH.uninitData.size 
+			+ UserStackSize;	// we need to increase the size
+						// to leave room for the stack
+
+    // Number page process need
+    numPages = divRoundUp(size, PageSize);
+    size = numPages * PageSize;
+
+    int numclear = gPhysPageBitMap->NumClear();
+
+    printf("\n\nSize: %d | numPages: %d | PageSize: %d | Numclear: %d\n\n", size, numPages, PageSize, numclear);  
+
+    if(numPages > numclear)
+    {
+	    printf("\nAddrSpace::Load : not enough memory for new process");
+	    numPages = 0;
+	    delete executable;
+	    addrLock->Release();
+    }
+
+    DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
+					numPages, size);
+    // first, set up the translation 
+    pageTable = new TranslationEntry[numPages];
+
+    for (i = 0; i < numPages; i++)
+    {
+    	pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
+    	pageTable[i].physicalPage = gPhysPageBitMap->Find();
+	    pageTable[i].valid = TRUE;
+	    pageTable[i].use = FALSE;
+	    pageTable[i].dirty = FALSE;
+	    pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
+					    // a separate page, we could set its 
+					    // pages to be read-only
+        printf("Physic Pages %d \n", pageTable[i].physicalPage);
+    }
+
+    addrLock->Release();
+
+    // then, copy in the code and data segments into memory
+    if (noffH.code.size > 0)
+    {
+	for(i = 0; i < numPages ; i++)
+	        executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr]) + (pageTable[i].physicalPage*PageSize),PageSize,noffH.code.inFileAddr + (i*PageSize));
+    }
+
+    if (noffH.initData.size > 0)
+    {
+	for(i = 0 ; i < numPages ; i++)
+	        executable->ReadAt(&(machine->mainMemory[noffH.initData.virtualAddr]) + (pageTable[i].physicalPage*PageSize),PageSize, noffH.initData.inFileAddr+(i*PageSize));
+    }	
+
+   delete executable;
+
+}
+
+// =========================================================================
+// End Modified
+// =========================================================================
+
+
+
+//----------------------------------------------------------------------
+// AddrSpace::~AddrSpace
+// 	Dealloate an address space.  Nothing for now!
+//----------------------------------------------------------------------
+
+AddrSpace::~AddrSpace()
+{
+	int i;
+	
+	for(i = 0; i < numPages ; i++)
+		gPhysPageBitMap->Clear(pageTable[i].physicalPage);
+
+	delete pageTable;
+}
+
 //----------------------------------------------------------------------
 // AddrSpace::InitRegisters
 // 	Set the initial values for the user-level register set.

@@ -39,7 +39,7 @@ int PTable::ExecUpdate(char* filename)
 		printf("\nUnable to open file %s\n", filename);
 		bmsem->Release();
 		return -1;
-    	}
+    }
 	delete executable;			// close file
 ////////////////////////////////////////////////////////////
 
@@ -61,11 +61,9 @@ int PTable::ExecUpdate(char* filename)
 		return -1;
 	}
 ////////////////////////////////////////////////////////////
-
 	pcb[ID]= new PCB(ID);
 	bm->Mark(ID);
 	int pID= pcb[ID]->Exec(filename,ID);
-
 	bmsem->Release();
 	return pID;
 }
@@ -103,7 +101,7 @@ int PTable::ExitUpdate(int ec)
 int PTable::JoinUpdate(int pID)
 {
 	
-	if(pID <= 0 || pID > 9)
+	if(pID < 0)
 	{
 		printf("\nLoi: Khong ton tai process: id = %d\n",pID);
 		return -1;
@@ -123,8 +121,8 @@ int PTable::JoinUpdate(int pID)
 	}
 /////////////////////////////////////////////////////////////////////////////////////////////
 	
-
 	pcb[pID]->JoinWait(); 	//doi den khi tien trinh con ket thuc
+	printf("ptable.cc line 125 pcb[%d] JoinWait successfully\n", pID);
 
 	int ec = pcb[pID]->GetExitCode();
 

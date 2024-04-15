@@ -42,9 +42,6 @@ extern SynchConsole* gSynchConsole;
 
 extern Semaphore* addrLock;
 extern BitMap* gPhysPageBitMap;
-
-
-
 extern PTable* pTab;
 extern Stable* semTab;
 

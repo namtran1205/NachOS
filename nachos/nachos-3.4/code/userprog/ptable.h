@@ -11,7 +11,7 @@ class PTable {
 public:
     // khởi tạo size đối tượng PCB để lưu size process. Gán giá trị ban đầu là null
     // nhớ khởi tạo bm và bmsem để sử dụng
-    PTable(int size = 10);               
+    PTable(int size);               
     ~PTable();                          // hủy các đối tượng đã tạo
     int ExecUpdate(char* name);         // Xử lý cho system call SC_Exit
     int ExitUpdate(int ec);             // Xử lý cho system call SC_Exit

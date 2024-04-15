@@ -48,4 +48,6 @@ private:
     Thread* thread;
 };
 
+void MyStartProcess(int pID);
+
 #endif
