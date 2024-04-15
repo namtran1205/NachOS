@@ -16,7 +16,6 @@
 #include "stats.h"
 #include "timer.h"
 #include "bitmap.h"
-#include "synch.h"
 #include "ptable.h"
 #include "stable.h"
 
@@ -37,11 +36,18 @@ extern Timer *timer;				// the hardware alarm clock
 #ifdef USER_PROGRAM
 #include "machine.h"
 #include "synchcons.h"
+#include "synch.h"
 extern Machine* machine;	// user program memory and registers
 extern SynchConsole* gSynchConsole;
 
 extern Semaphore* addrLock;
 extern BitMap* gPhysPageBitMap;
+
+
+
+extern PTable* pTab;
+extern Stable* semTab;
+
 #endif
 
 #ifdef FILESYS_NEEDED 		// FILESYS or FILESYS_STUB 
@@ -59,15 +65,5 @@ extern SynchDisk   *synchDisk;
 extern PostOffice* postOffice;
 #endif
 
-
-#ifdef STABLE_H
-#include "stable.h"
-extern Stable* semTab;
-#endif
-
-#ifdef PTABLE_H
-#include "ptable.h"
-extern PTable* pTab;
-#endif
 
 #endif // SYSTEM_H

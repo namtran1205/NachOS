@@ -39,6 +39,7 @@
 
 #include "copyright.h"
 #include "utility.h"
+#include <stdio.h>
 
 #ifdef USER_PROGRAM
 #include "machine.h"

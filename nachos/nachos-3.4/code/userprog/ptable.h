@@ -5,13 +5,13 @@
 #include "pcb.h"
 #include "synch.h"
 
-#define MAX_PROCESS 10
+#define MAXPROCESS 10
 
 class PTable {
 public:
     // khởi tạo size đối tượng PCB để lưu size process. Gán giá trị ban đầu là null
     // nhớ khởi tạo bm và bmsem để sử dụng
-    PTable(int size);               
+    PTable(int size = 10);               
     ~PTable();                          // hủy các đối tượng đã tạo
     int ExecUpdate(char* name);         // Xử lý cho system call SC_Exit
     int ExitUpdate(int ec);             // Xử lý cho system call SC_Exit
@@ -22,8 +22,8 @@ public:
     char* GetFileName(int id);          // Trả về tên chương trình
 
 private:
-    BitMap bm;                          // đánh dấu các vị trí đã sử dụng trong pcb
-    PCB* pcb[MAX_PROCESS];
+    BitMap* bm;                          // đánh dấu các vị trí đã sử dụng trong pcb
+    PCB* pcb[MAXPROCESS];
     int psize;
     Semaphore* bmsem;                   // dùng để ngăn chặn trường hợp nạp 2 tiến trình cùng một lúc
 };

@@ -12,7 +12,8 @@ public:
         sem = new Semaphore(name,i);
     }
     ~Sem(){
-        delete sem;     // hủy các đối tượng đã tạo
+        if(sem != NULL)
+            delete sem;     // hủy các đối tượng đã tạo
     }
 
     void wait(){

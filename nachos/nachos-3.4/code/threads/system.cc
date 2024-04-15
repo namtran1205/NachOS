@@ -31,21 +31,18 @@ SynchDisk   *synchDisk;
 #ifdef USER_PROGRAM	// requires either FILESYS or FILESYS_STUB
 Machine *machine;	// user program memory and registers
 SynchConsole* gSynchConsole;
+
+
 Semaphore* addrLock;
 BitMap* gPhysPageBitMap;
+
+PTable* pTab;
+Stable* semTab;
 
 #endif
 
 #ifdef NETWORK
 PostOffice *postOffice;
-#endif
-
-#ifdef STABLE_H
-Stable* semTab;
-#endif
-
-#ifdef PTABLE_H
-PTable* pTab;
 #endif
 
 
@@ -157,8 +154,7 @@ Initialize(int argc, char **argv)
     currentThread = new Thread("main");		
     currentThread->setStatus(RUNNING);
 
-    addrLock = new Semaphore("Address Lock", 1);
-    gPhysPageBitMap = new BitMap(32);
+
 
     interrupt->Enable();
     CallOnUserAbort(Cleanup);			// if user hits ctl-C
@@ -166,6 +162,13 @@ Initialize(int argc, char **argv)
     #ifdef USER_PROGRAM
         machine = new Machine(debugUserProg);	// this must come first
         gSynchConsole = new SynchConsole();
+        addrLock = new Semaphore("Address Lock", 1);
+        gPhysPageBitMap = new BitMap(256);
+
+
+        pTab = new PTable(10);
+        semTab = new Stable();
+
     #endif
 
     #ifdef FILESYS
@@ -180,13 +183,11 @@ Initialize(int argc, char **argv)
         postOffice = new PostOffice(netname, rely, 10);
     #endif
 
-    #ifdef STABLE_H
-        semTab = new Stable();
-    #endif
+    // #ifdef STABLE_H
+    // #endif
 
-    #ifdef PTABLE_H
-        pTab = new PTable(10);
-    #endif
+    // #ifdef PTABLE_H
+    // #endif
 }
 
 //----------------------------------------------------------------------
@@ -215,13 +216,13 @@ Cleanup()
         delete synchDisk;
     #endif
 
-    #ifdef STABLE_H
-        delete semTab;
-    #endif
+    // #ifdef STABLE_H
+    //     delete semTab;
+    // #endif
 
-    #ifdef PTABLE_H
-        delete pTab;
-    #endif
+    // #ifdef PTABLE_H
+    //     delete pTab;
+    // #endif
     
     delete timer;
     delete scheduler;

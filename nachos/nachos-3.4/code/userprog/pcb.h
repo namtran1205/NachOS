@@ -42,7 +42,7 @@ private:
     int exitcode;
     int numwait;                            // số tiến trình đã join
     int pid;
-    int		JoinStatus;
+    int	JoinStatus;
     char processname[32];                   // Tên tiến trình
 
     Thread* thread;

@@ -257,8 +257,8 @@ Down:
 	.end Down
 	
 /* dummy function to keep gcc happy */
-        .globl  __main
-        .ent    __main
+    .globl  __main
+    .ent    __main
 __main:
         j       $31
         .end    __main

@@ -844,182 +844,185 @@ void ExceptionHandler(ExceptionType which)
                     IncreasePC();
                     return;
                 }
-                case SC_Join:
-                {
-                    // Đọc ID từ thanh ghi 4 của máy
-                    int userId = machine->ReadRegister(4);
+                
+                // case SC_Join:
+                // {
+                //     // Đọc ID từ thanh ghi 4 của máy
+                //     int userId = machine->ReadRegister(4);
 
-                    // Thực hiện hoạt động cập nhật tham gia bằng cách sử dụng ID đã thu được
-                    int joinResult = pTab->JoinUpdate(userId);
+                //     // Thực hiện hoạt động cập nhật tham gia bằng cách sử dụng ID đã thu được
+                //     int joinResult = pTab->JoinUpdate(userId);
 
-                    // Ghi kết quả của hoạt động tham gia vào thanh ghi 2
-                    machine->WriteRegister(2, joinResult);
+                //     // Ghi kết quả của hoạt động tham gia vào thanh ghi 2
+                //     machine->WriteRegister(2, joinResult);
 
-                    // Tăng bộ đếm chương trình để di chuyển đến lệnh tiếp theo
-                    IncreasePC();
-                    return;
+                //     // Tăng bộ đếm chương trình để di chuyển đến lệnh tiếp theo
+                //     IncreasePC();
+                //     return;
 
-                }
-                case SC_Exec:
-                {
-                    int userAddr = machine->ReadRegister(4);
-                    char *fileName = User2System(userAddr, 255);
+                // }
+                // case SC_Exec:
+                // {
+                //     int userAddr = machine->ReadRegister(4);
+                //     char *fileName = User2System(userAddr, 255);
 
-                    OpenFile *file = fileSystem->Open(fileName);
-                    if (file == NULL)
-                    {
+                //     OpenFile *file = fileSystem->Open(fileName);
+                //     if (file == NULL)
+                //     {
                         
-                        delete[] fileName;
-                        IncreasePC();
-                        return;
-                    }
+                //         delete[] fileName;
+                //         IncreasePC();
+                //         return;
+                //     }
 
 
-                    delete[] fileName;
-                    IncreasePC();
-                    break;
-                }
-                case SC_Exit:
-                {
-                    // Đọc trạng thái thoát từ thanh ghi
-                    int exitStatus = machine->ReadRegister(4);
+                //     delete[] fileName;
+                //     IncreasePC();
+                //     break;
+                // }
+                // case SC_Exit:
+                // {
+                //     // Đọc trạng thái thoát từ thanh ghi
+                //     int exitStatus = machine->ReadRegister(4);
 
-                    // Kiểm tra nếu trạng thái thoát khác không
-                    if (exitStatus != 0) {
-                        IncreasePC();
-                        return;
-                    }
+                //     // Kiểm tra nếu trạng thái thoát khác không
+                //     if (exitStatus != 0) {
+                //         IncreasePC();
+                //         return;
+                //     }
 
-                    // Cập nhật bảng tiến trình với trạng thái thoát
-                    int result = pTab->ExitUpdate(exitStatus);
+                //     // Cập nhật bảng tiến trình với trạng thái thoát
+                //     int result = pTab->ExitUpdate(exitStatus);
 
-                    // Giải phóng tài nguyên liên kết với luồng hiện tại
-                    currentThread->FreeSpace();
+                //     // Giải phóng tài nguyên liên kết với luồng hiện tại
+                //     currentThread->FreeSpace();
 
-                    // Kết thúc việc thực thi của luồng hiện tại
-                    currentThread->Finish();
+                //     // Kết thúc việc thực thi của luồng hiện tại
+                //     currentThread->Finish();
 
-                    // Di chuyển đến lệnh tiếp theo
-                    IncreasePC();
-                    return;
+                //     // Di chuyển đến lệnh tiếp theo
+                //     IncreasePC();
+                //     return;
+                // }
+                
+                
+                // case SC_CreateSemaphore:
+                // {
+                //     // Đọc tham số từ các thanh ghi máy
+                //     int virtAddr = machine->ReadRegister(4);
+                //     int semval = machine->ReadRegister(5);
 
-                }
-                case SC_CreateSemaphore:
-                {
-                    // Đọc tham số từ các thanh ghi máy
-                    int virtAddr = machine->ReadRegister(4);
-                    int semval = machine->ReadRegister(5);
+                //     // Chuyển địa chỉ ảo thành không gian hệ thống cho tên semaphore
+                //     char *name = User2System(virtAddr, 255);
 
-                    // Chuyển địa chỉ ảo thành không gian hệ thống cho tên semaphore
-                    char *name = User2System(virtAddr, 255);
+                //     // Kiểm tra nếu không đủ bộ nhớ để cấp phát cho biến name
+                //     if (name == NULL) {
+                //         DEBUG('a', "\n Not enough memory in the system");
+                //         printf("\n Not enough memory in the system");
+                //         machine->WriteRegister(2, -1);
+                //         IncreasePC();
+                //         return;
+                //     }
 
-                    // Kiểm tra nếu không đủ bộ nhớ để cấp phát cho biến name
-                    if (name == NULL) {
-                        DEBUG('a', "\n Not enough memory in the system");
-                        printf("\n Not enough memory in the system");
-                        machine->WriteRegister(2, -1);
-                        IncreasePC();
-                        return;
-                    }
+                //     // Tạo semaphore với tên và giá trị khởi tạo được chỉ định
+                //     int result = semTab->Create(name, semval);
 
-                    // Tạo semaphore với tên và giá trị khởi tạo được chỉ định
-                    int result = semTab->Create(name, semval);
+                //     // Xử lý khi không thể tạo semaphore
+                //     if (result == -1) {
+                //         DEBUG('a', "\n Cannot create semaphore");
+                //         printf("\n Cannot create semaphore");
+                //         machine->WriteRegister(2, -1);
+                //         delete[] name;
+                //         IncreasePC();
+                //         return;
+                //     }
 
-                    // Xử lý khi không thể tạo semaphore
-                    if (result == -1) {
-                        DEBUG('a', "\n Cannot create semaphore");
-                        printf("\n Cannot create semaphore");
-                        machine->WriteRegister(2, -1);
-                        delete[] name;
-                        IncreasePC();
-                        return;
-                    }
+                //     // Dọn dẹp bộ nhớ đã cấp phát và ghi kết quả vào thanh ghi 2
+                //     delete[] name;
+                //     machine->WriteRegister(2, result);
+                //     IncreasePC();
+                //     return;
 
-                    // Dọn dẹp bộ nhớ đã cấp phát và ghi kết quả vào thanh ghi 2
-                    delete[] name;
-                    machine->WriteRegister(2, result);
-                    IncreasePC();
-                    return;
+                // }
+                // case SC_Up:
+                // {
+                //     // Đọc địa chỉ ảo từ thanh ghi 4 của máy
+                //     int virtualAddress = machine->ReadRegister(4);
 
-                }
-                case SC_Up:
-                {
-                    // Đọc địa chỉ ảo từ thanh ghi 4 của máy
-                    int virtualAddress = machine->ReadRegister(4);
+                //     int semaphoreValue = machine->ReadRegister(5);
 
-                    int semaphoreValue = machine->ReadRegister(5);
+                //     // Chuyển đổi địa chỉ ảo thành tên semaphore trong hệ thống
+                //     char *semaphoreName = User2System(virtualAddress, 255);
 
-                    // Chuyển đổi địa chỉ ảo thành tên semaphore trong hệ thống
-                    char *semaphoreName = User2System(virtualAddress, 255);
+                //     // Kiểm tra xem việc chuyển đổi có thành công không
+                //     if (semaphoreName == NULL) {
+                //         // Báo lỗi nếu không đủ bộ nhớ để cấp phát
+                //         DEBUG('a', "\n Not enough memory in the system");
+                //         printf("\n Not enough memory in the system");
+                //         machine->WriteRegister(2, -1);
+                //         IncreasePC();
+                //         return;
+                //     }
 
-                    // Kiểm tra xem việc chuyển đổi có thành công không
-                    if (semaphoreName == NULL) {
-                        // Báo lỗi nếu không đủ bộ nhớ để cấp phát
-                        DEBUG('a', "\n Not enough memory in the system");
-                        printf("\n Not enough memory in the system");
-                        machine->WriteRegister(2, -1);
-                        IncreasePC();
-                        return;
-                    }
+                //     // Gọi hàm Signal của SemaphoreTable để thực hiện phát tín hiệu cho semaphore
+                //     int result = semTab->Signal(semaphoreName);
 
-                    // Gọi hàm Signal của SemaphoreTable để thực hiện phát tín hiệu cho semaphore
-                    int result = semTab->Signal(semaphoreName);
+                //     // Xử lý khi không tìm thấy semaphore có tên chỉ định
+                //     if (result == -1) {
+                //         DEBUG('a', "\n This semaphore does not exist!");
+                //         printf("\n This semaphore does not exist!");
+                //         machine->WriteRegister(2, -1);
+                //         delete[] semaphoreName;
+                //         IncreasePC();
+                //         return;
+                //     }
 
-                    // Xử lý khi không tìm thấy semaphore có tên chỉ định
-                    if (result == -1) {
-                        DEBUG('a', "\n This semaphore does not exist!");
-                        printf("\n This semaphore does not exist!");
-                        machine->WriteRegister(2, -1);
-                        delete[] semaphoreName;
-                        IncreasePC();
-                        return;
-                    }
+                //     // Ghi kết quả vào thanh ghi 2 của máy và tăng chương trình tiếp tục thực thi
+                //     delete[] semaphoreName;
+                //     machine->WriteRegister(2, result);
+                //     IncreasePC();
+                //     return;
+                // }
+                // case SC_Down:
+                // {
+                //     // Đọc địa chỉ ảo từ thanh ghi 4 của máy
+                //     int virtualAddress = machine->ReadRegister(4);
 
-                    // Ghi kết quả vào thanh ghi 2 của máy và tăng chương trình tiếp tục thực thi
-                    delete[] semaphoreName;
-                    machine->WriteRegister(2, result);
-                    IncreasePC();
-                    return;
-                }
-                case SC_Down:
-                {
-                    // Đọc địa chỉ ảo từ thanh ghi 4 của máy
-                    int virtualAddress = machine->ReadRegister(4);
+                //     int semaphoreValue = machine->ReadRegister(5);
 
-                    int semaphoreValue = machine->ReadRegister(5);
+                //     // Chuyển đổi địa chỉ ảo thành tên semaphore trong hệ thống
+                //     char *semaphoreName = User2System(virtualAddress, 255);
 
-                    // Chuyển đổi địa chỉ ảo thành tên semaphore trong hệ thống
-                    char *semaphoreName = User2System(virtualAddress, 255);
+                //     // Kiểm tra xem việc chuyển đổi có thành công không
+                //     if (semaphoreName == NULL) {
+                //         // Báo lỗi nếu không đủ bộ nhớ để cấp phát
+                //         DEBUG('a', "\n Not enough memory in the system");
+                //         printf("\n Not enough memory in the system");
+                //         machine->WriteRegister(2, -1);
+                //         IncreasePC();
+                //         return;
+                //     }
 
-                    // Kiểm tra xem việc chuyển đổi có thành công không
-                    if (semaphoreName == NULL) {
-                        // Báo lỗi nếu không đủ bộ nhớ để cấp phát
-                        DEBUG('a', "\n Not enough memory in the system");
-                        printf("\n Not enough memory in the system");
-                        machine->WriteRegister(2, -1);
-                        IncreasePC();
-                        return;
-                    }
+                //     // Gọi hàm Wait của SemaphoreTable để thực hiện chờ đợi cho semaphore
+                //     int result = semTab->Wait(semaphoreName);
 
-                    // Gọi hàm Wait của SemaphoreTable để thực hiện chờ đợi cho semaphore
-                    int result = semTab->Wait(semaphoreName);
+                //     // Xử lý khi không tìm thấy semaphore có tên chỉ định
+                //     if (result == -1) {
+                //         DEBUG('a', "\n This semaphore does not exist!");
+                //         printf("\n This semaphore does not exist!");
+                //         machine->WriteRegister(2, -1);
+                //         delete[] semaphoreName;
+                //         IncreasePC();
+                //         return;
+                //     }
 
-                    // Xử lý khi không tìm thấy semaphore có tên chỉ định
-                    if (result == -1) {
-                        DEBUG('a', "\n This semaphore does not exist!");
-                        printf("\n This semaphore does not exist!");
-                        machine->WriteRegister(2, -1);
-                        delete[] semaphoreName;
-                        IncreasePC();
-                        return;
-                    }
-
-                    // Ghi kết quả vào thanh ghi 2 của máy và tăng chương trình tiếp tục thực thi
-                    delete[] semaphoreName;
-                    machine->WriteRegister(2, result);
-                    IncreasePC();
-                    return;
-                }
+                //     // Ghi kết quả vào thanh ghi 2 của máy và tăng chương trình tiếp tục thực thi
+                //     delete[] semaphoreName;
+                //     machine->WriteRegister(2, result);
+                //     IncreasePC();
+                //     return;
+                // }
+                
                 default:
                     break;
             }

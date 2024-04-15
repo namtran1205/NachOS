@@ -1,5 +1,6 @@
 #include "ptable.h"
 #include "system.h"
+#include "openfile.h"
 
 PTable::PTable(int size)
 {
@@ -20,7 +21,7 @@ PTable::~PTable()
 		delete bm;
 	if(bmsem!=NULL)
 		delete bmsem;
-	for(i=0; i<MAXPROCESS; i++)
+	for(i=0; i< MAXPROCESS; i++)
 		if(pcb[i]!=NULL)
 			delete pcb[i];
 }
@@ -29,14 +30,14 @@ PTable::~PTable()
 
 int PTable::ExecUpdate(char* filename)
 {
-	bmsem->P();			//chi nap 1 tien trinh vao mot thoi diem
+	bmsem->Acquire();			//chi nap 1 tien trinh vao mot thoi diem
 
 //Kiem tra file co ton tai tren may khong
 	OpenFile *executable = fileSystem->Open(filename);
 	if (executable == NULL) 
 	{
 		printf("\nUnable to open file %s\n", filename);
-		bmsem->V();
+		bmsem->Release();
 		return -1;
     	}
 	delete executable;			// close file
@@ -46,7 +47,7 @@ int PTable::ExecUpdate(char* filename)
 	if(!strcmp(filename,currentThread->getName()))
 	{
 		printf("\nLoi: khong duoc phep goi exce chinh no !!!\n");
-		bmsem->V();
+		bmsem->Release();
 		return -1;
 	}
 ////////////////////////////////////////////////////////////
@@ -56,7 +57,7 @@ int PTable::ExecUpdate(char* filename)
 	if(ID==-1)
 	{
 		printf("\nLoi: Da vuot qua 10 tien trinh !!!\n");
-		bmsem->V();
+		bmsem->Release();
 		return -1;
 	}
 ////////////////////////////////////////////////////////////
@@ -65,7 +66,7 @@ int PTable::ExecUpdate(char* filename)
 	bm->Mark(ID);
 	int pID= pcb[ID]->Exec(filename,ID);
 
-	bmsem->V();
+	bmsem->Release();
 	return pID;
 }
 
@@ -86,19 +87,17 @@ int PTable::ExitUpdate(int ec)
 		interrupt->Halt();
 		return 0;
 	}
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 
 	pcb[pID]->SetExitCode(ec);
+	pcb[pcb[pID]->parentID]->DecNumWait();
+	pcb[pID]->JoinRelease();
+    // 
+	pcb[pID]->ExitWait();
 	
-	if(pcb[pID]->JoinStatus != -1)
-	{
-		pcb[pID]->JoinRelease();
-		pcb[pID]->ExitWait();
-		Remove(pID);	
-	}
-	else
-		Remove(pID);
+	Remove(pID);
 	return ec;
+
 }
 
 int PTable::JoinUpdate(int pID)
@@ -154,7 +153,7 @@ void PTable::Remove(int pID)
 //----------------------------------------------------------------------------------------------
 int PTable::GetFreeSlot()
 {
-	return bm->FindFreeSlot();
+	return bm->Find();
 }
 
 bool PTable::IsExist(int pID)
@@ -164,8 +163,7 @@ bool PTable::IsExist(int pID)
 	return bm->Test(pID);
 }
 
-char* PTable::GetName(int pID)
+char* PTable::GetFileName(int id)
 {
-	if(pID>=0 && pID<10 && bm->Test(pID))
-		return pcb[pID]->GetNameThread();
+	return (pcb[id]->GetFileName());
 }
