@@ -56,8 +56,8 @@ static Semaphore *writeDone;
 // 	Wake up the thread that requested the I/O.
 //----------------------------------------------------------------------
 
-static void ReadAvail(int arg) { readAvail->V(); }
-static void WriteDone(int arg) { writeDone->V(); }
+static void ReadAvail(int arg) { readAvail->Release(); }
+static void WriteDone(int arg) { writeDone->Release(); }
 
 //----------------------------------------------------------------------
 // ConsoleTest
@@ -75,10 +75,10 @@ ConsoleTest (char *in, char *out)
     writeDone = new Semaphore("write done", 0);
     
     for (;;) {
-	readAvail->P();		// wait for character to arrive
+	readAvail->Acquire();		// wait for character to arrive
 	ch = console->GetChar();
 	console->PutChar(ch);	// echo it!
-	writeDone->P() ;        // wait for write to finish
+	writeDone->Acquire() ;        // wait for write to finish
 	if (ch == 'q') return;  // if q, quit
     }
 }

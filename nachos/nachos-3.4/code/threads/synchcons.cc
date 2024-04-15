@@ -16,8 +16,8 @@ static Semaphore *WLineBlock;
 // 	Wake up the thread that requested the I/O.
 //----------------------------------------------------------------------
 
-static void SynchReadFunct(int arg) { synchReadAvail->V(); }
-static void SynchWriteFunct(int arg) { synchWriteAvail->V(); }
+static void SynchReadFunct(int arg) { synchReadAvail->Release(); }
+static void SynchWriteFunct(int arg) { synchWriteAvail->Release(); }
 
 
 //----------------------------------------------------------------------
@@ -72,17 +72,17 @@ int SynchConsole::Write(char *from, int numBytes)
 {
 	int loop;			// General purpose counter
 
-	WLineBlock->P();			// Block for the line
+	WLineBlock->Acquire();			// Block for the line
 
 //	printf("[%s]:\n",currentThread->getName());	//DEBUG: Print thread
 
 	for (loop = 0; loop < numBytes; loop++)
 	{
 		cons->PutChar(from[loop]);		// Write and wait
-		synchWriteAvail->P();			// Block for a character
+		synchWriteAvail->Acquire();			// Block for a character
 	}
 
-	WLineBlock->V();				// Free Up
+	WLineBlock->Release();				// Free Up
 	return numBytes;				// Return the bytes out
 }
 
@@ -104,7 +104,7 @@ SynchConsole::Read(char *into, int numBytes)
 
 	loop = 0;
 
-	RLineBlock->P();				// Block for a read line
+	RLineBlock->Acquire();				// Block for a read line
 
 //	printf("{%s}:\n",currentThread->getName());	// DEBUG print thread
 
@@ -112,7 +112,7 @@ SynchConsole::Read(char *into, int numBytes)
 	{
 		do
 		{
-			synchReadAvail->P();		// Block for single char
+			synchReadAvail->Acquire();		// Block for single char
 			ch = cons->GetChar();		// Get a char (could)
 		} while ( ch == EOF);
 
@@ -127,7 +127,7 @@ SynchConsole::Read(char *into, int numBytes)
 		}
 	}
 
-	RLineBlock->V();				// UnBLock
+	RLineBlock->Release();				// UnBLock
 
 	if (ch == '\001')				// CTRL-A Returns -1
 		return -1;				// For end of stream

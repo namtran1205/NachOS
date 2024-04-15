@@ -41,7 +41,7 @@ PostOffice *postOffice;
 #endif
 
 #ifdef STABLE_H
-STable* semTab;
+Stable* semTab;
 #endif
 
 #ifdef PTABLE_H
@@ -181,7 +181,7 @@ Initialize(int argc, char **argv)
     #endif
 
     #ifdef STABLE_H
-        semTab = new STable();
+        semTab = new Stable();
     #endif
 
     #ifdef PTABLE_H

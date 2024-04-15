@@ -876,7 +876,7 @@ void ExceptionHandler(ExceptionType which)
 
 
                     delete[] fileName;
-                    IncreasePC()
+                    IncreasePC();
                     break;
                 }
                 case SC_Exit:

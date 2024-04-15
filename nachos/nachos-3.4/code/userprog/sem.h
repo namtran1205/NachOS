@@ -16,10 +16,10 @@ public:
     }
 
     void wait(){
-        sem->P();       // thực hiện thao tác chờ
+        sem->Acquire();       // thực hiện thao tác chờ
     }
     void signal(){
-        sem->V();       // thực hiện thao tác giải phóng Semaphore
+        sem->Release();       // thực hiện thao tác giải phóng Semaphore
     }
     char* GetName(){    // Trả về tên của Semaphore
         return name;

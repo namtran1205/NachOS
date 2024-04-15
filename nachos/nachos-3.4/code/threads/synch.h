@@ -42,8 +42,8 @@ class Semaphore {
     ~Semaphore();   					// de-allocate semaphore
     char* getName() { return name;}			// debugging assist
     
-    void P();	 // these are the only operations on a semaphore
-    void V();	 // they are both *atomic*
+    void Acquire();	 // these are the only operations on a semaphore
+    void Release();	 // they are both *atomic*
     
   private:
     char* name;        // useful for debugging

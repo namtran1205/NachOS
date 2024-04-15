@@ -17,6 +17,8 @@
 #include "timer.h"
 #include "bitmap.h"
 #include "synch.h"
+#include "ptable.h"
+#include "stable.h"
 
 // Initialization and cleanup routines
 extern void Initialize(int argc, char **argv); 	// Initialization,
@@ -38,7 +40,7 @@ extern Timer *timer;				// the hardware alarm clock
 extern Machine* machine;	// user program memory and registers
 extern SynchConsole* gSynchConsole;
 
-extern Semaphore* addrlock;
+extern Semaphore* addrLock;
 extern BitMap* gPhysPageBitMap;
 #endif
 
@@ -60,7 +62,7 @@ extern PostOffice* postOffice;
 
 #ifdef STABLE_H
 #include "stable.h"
-extern STable* semTab;
+extern Stable* semTab;
 #endif
 
 #ifdef PTABLE_H

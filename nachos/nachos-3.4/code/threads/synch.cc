@@ -62,7 +62,7 @@ Semaphore::~Semaphore()
 //----------------------------------------------------------------------
 
 void
-Semaphore::P()
+Semaphore::Acquire()
 {
     IntStatus oldLevel = interrupt->SetLevel(IntOff);	// disable interrupts
     
@@ -85,7 +85,7 @@ Semaphore::P()
 //----------------------------------------------------------------------
 
 void
-Semaphore::V()
+Semaphore::Release()
 {
     Thread *thread;
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
@@ -110,3 +110,5 @@ Condition::~Condition() { }
 void Condition::Wait(Lock* conditionLock) { ASSERT(FALSE); }
 void Condition::Signal(Lock* conditionLock) { }
 void Condition::Broadcast(Lock* conditionLock) { }
+
+
