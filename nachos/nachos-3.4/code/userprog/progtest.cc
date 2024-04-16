@@ -20,6 +20,27 @@
 //	memory, and jump to it.
 //----------------------------------------------------------------------
 
+
+void MyStartProcess(int pID)
+{
+	char *filename = pTab->GetFileName(pID);
+	AddrSpace *space= new AddrSpace(filename);
+	if(space == NULL)
+	{
+		printf("\nLoi: Khong du bo nho de cap phat cho tien trinh !!!\n");
+		return; 
+	}
+	currentThread->space = space;
+
+	space->InitRegisters();		// set the initial register values
+	space->RestoreState();		// load page table register
+
+	machine->Run();			// jump to the user progam
+	ASSERT(FALSE);			// machine->Run never returns;
+						// the address space exits
+						// by doing the syscall "exit"
+}
+
 void
 StartProcess(char *filename)
 {

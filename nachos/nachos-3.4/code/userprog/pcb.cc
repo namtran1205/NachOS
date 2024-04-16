@@ -5,9 +5,9 @@
 #include "addrspace.h"
 
 
-char* file_name;
+char* file_name = NULL;
 
-void MyStartProcess(int pID);
+extern void MyStartProcess(int pID);
 
 
 PCB::PCB()
@@ -17,19 +17,22 @@ PCB::PCB()
 
 PCB::PCB(int id)
 {
-	joinsem = new Semaphore("JoinSem",0);
-	exitsem = new Semaphore("ExitSem",0);
-	mutex = new Semaphore("Mutex",1);
 	pid= id;
 	exitcode= 0;
 	numwait= 0;
-	if(id)
-		parentID= currentThread->processID;
-	else
-		parentID= 0;
+    if (id == 0)
+        this->parentID = -1;
+    else
+        this->parentID = currentThread->processID;
+	
+	numwait = exitcode = boolBG = 0;
+
 	thread = NULL;
 	JoinStatus= -1;
 
+	joinsem = new Semaphore("JoinSem",0);
+	exitsem = new Semaphore("ExitSem",0);
+	mutex = new Semaphore("Mutex",1);
 }
 
 PCB::~PCB()
@@ -88,7 +91,6 @@ char* PCB::GetNameThread()
 void PCB::JoinWait()
 {
 	joinsem->Acquire();
-	printf("pcb.cc - JoinWait line 88 joinsem->Acquire() successfully\n");
 }
 
 void PCB::JoinRelease()
@@ -110,7 +112,6 @@ void PCB::ExitRelease()
 int PCB::Exec(char *filename, int pID)
 {
 	mutex->Acquire();
-	printf("pcb.cc line 111 filename : %s\n", filename);
 	thread= new Thread(filename);
 	if(thread == NULL)
 	{
@@ -119,18 +120,18 @@ int PCB::Exec(char *filename, int pID)
 		return -1;
 	}
 	thread->processID = pID;
-	printf("pcb.cc line 120 pID = %d\n", pID);
 	parentID = currentThread->processID;
 
 	file_name = new char[255];
 	for (int i = 0; i < strlen(filename); i++) {
 		file_name[i] = filename[i];
 	}
-	printf("pcb.cc line 129 file_name: %s\n", file_name);
+	file_name[strlen(file_name)] = '\0';
 
 	thread->Fork(MyStartProcess, pID);
 
 	delete file_name;
+	file_name = NULL;
 	mutex->Release();
 	return pID;
 }
@@ -142,30 +143,9 @@ void PCB::SetFileName(char* fn)
 
 char* PCB::GetFileName()
 {
-	 return this->processname;
+	return this->processname;
 }
 
 
 //*************************************************************************************
-void MyStartProcess(int pID)
-{
-	printf("pcb.cc line 141 pID = %d\n", pID);
-	char *filename = pTab->GetFileName(pID);
-	printf("pcb.cc line 140 filename : %s\n", file_name);
-	AddrSpace *space= new AddrSpace(file_name);
-	if(space == NULL)
-	{
-		printf("\nLoi: Khong du bo nho de cap phat cho tien trinh !!!\n");
-		return; 
-	}
-	currentThread->space = space;
-
-	space->InitRegisters();		// set the initial register values
-	space->RestoreState();		// load page table register
-
-	machine->Run();			// jump to the user progam
-	ASSERT(FALSE);			// machine->Run never returns;
-						// the address space exits
-						// by doing the syscall "exit"
-}
 

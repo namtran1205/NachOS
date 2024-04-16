@@ -90,6 +90,7 @@ class Thread {
 
     // basic thread operations
     int processID;
+    int exitStatus;
     void FreeSpace(){
         if (space != NULL)
             delete space;

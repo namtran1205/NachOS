@@ -849,10 +849,8 @@ void ExceptionHandler(ExceptionType which)
                 {
                     // Đọc ID từ thanh ghi 4 của máy
                     int userId = machine->ReadRegister(4);
-                    printf("SC_JOIN line 852 userId = %d\n", userId);
                     // Thực hiện hoạt động cập nhật tham gia bằng cách sử dụng ID đã thu được
                     int joinResult = pTab->JoinUpdate(userId);
-                    printf("SC_Join line 855: joinResult = %d\n", joinResult);
 
                     // Ghi kết quả của hoạt động tham gia vào thanh ghi 2
                     machine->WriteRegister(2, joinResult);

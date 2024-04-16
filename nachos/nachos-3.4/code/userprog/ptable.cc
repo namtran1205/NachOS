@@ -12,6 +12,10 @@ PTable::PTable(int size)
 	for(i = 0 ; i < MAXPROCESS ; ++i)
 		pcb[i] = NULL;
 	bm->Mark(0);
+
+	pcb[0] = new PCB(0);
+	pcb[0]->SetFileName("./test/pingpong");
+	pcb[0]->parentID = -1;
 }
 
 PTable::~PTable()
@@ -62,7 +66,11 @@ int PTable::ExecUpdate(char* filename)
 	}
 ////////////////////////////////////////////////////////////
 	pcb[ID]= new PCB(ID);
-	bm->Mark(ID);
+	pcb[ID]->SetFileName(filename);
+	//bm->Mark(ID);
+
+	pcb[ID]->parentID = currentThread->processID;
+
 	int pID= pcb[ID]->Exec(filename,ID);
 	bmsem->Release();
 	return pID;
@@ -120,9 +128,9 @@ int PTable::JoinUpdate(int pID)
 		return -1;
 	}
 /////////////////////////////////////////////////////////////////////////////////////////////
-	
+	pcb[pcb[pID]->parentID]->IncNumWait();
+
 	pcb[pID]->JoinWait(); 	//doi den khi tien trinh con ket thuc
-	printf("ptable.cc line 125 pcb[%d] JoinWait successfully\n", pID);
 
 	int ec = pcb[pID]->GetExitCode();
 
@@ -134,7 +142,7 @@ int PTable::JoinUpdate(int pID)
 
 	pcb[pID]->ExitRelease();	//cho phep tien trinh con ket thuc
 	
-	return 0;
+	return ec;
 }
 
 void PTable::Remove(int pID)

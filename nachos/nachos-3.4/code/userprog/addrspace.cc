@@ -427,7 +427,6 @@ AddrSpace::AddrSpace(OpenFile *executable)
     if (executable == NULL)
     {
     	printf("Unable to open file %s\n");
-        printf("addrspace.cc line 430 Really ?????");
 	    return ;
     }
 
@@ -504,13 +503,11 @@ AddrSpace::AddrSpace(char* filename)
     NoffHeader noffH;
     unsigned int i, size;
 
-    printf("addrspace line 507: filename = %s\n", filename);
     OpenFile* executable = fileSystem->Open(filename);
 
     if (executable == NULL)
     {
     	printf("Unable to open file %s\n", filename);
-        printf("addrspace.cc line 512 File name?????");
 	    return;
     }
 
