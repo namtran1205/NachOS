@@ -37,6 +37,9 @@ int Stable::Create(char *name, int init)
 	{
 		if(bm->Test(i))
 		{
+			if (semTab[i]->GetName() == NULL)
+				continue;				
+			
 			if(strcmp(name, semTab[i]->GetName()) == 0)
 				return -1;
 		}
@@ -64,6 +67,9 @@ int Stable::Wait(char *name)
 		if(bm->Test(i))
 		{
 			// Neu co thi tien hanh so sanh name voi name cua semaphore trong semTab
+			if (semTab[i]->GetName() == NULL)
+				continue;
+
 			if(strcmp(name, semTab[i]->GetName()) == 0)
 			{
 				// Neu ton tai thi cho semaphore down(); 
@@ -84,6 +90,9 @@ int Stable::Signal(char *name)
 		if(bm->Test(i))
 		{
 			// Neu co thi tien hanh so sanh name voi name cua semaphore trong semTab
+			if (semTab[i]->GetName() == NULL)
+				continue;
+
 			if(strcmp(name, semTab[i]->GetName()) == 0)
 			{
 				// Neu ton tai thi cho semaphore up(); 
