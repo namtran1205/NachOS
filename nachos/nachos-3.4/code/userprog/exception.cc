@@ -143,9 +143,11 @@ void ExceptionHandler(ExceptionType which)
             switch(type)
             {
                 case SC_Halt:
+                {
 	    			DEBUG('a', "Shutdown, initiated by user program.\n");
 	    			interrupt->Halt();
                     break;
+                }
                 case SC_Create: 
                 {
                     int address; // Biến lưu địa chỉ của chuỗi tên tập tin

@@ -37,6 +37,8 @@ int Stable::Create(char *name, int init)
 	{
 		if(bm->Test(i))
 		{
+
+
 			if (semTab[i]->GetName() == NULL)
 				continue;				
 			
