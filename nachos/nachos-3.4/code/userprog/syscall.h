@@ -45,7 +45,7 @@
 #define SC_CreateSemaphore  23
 #define SC_Up               24    
 #define SC_Down             25
-
+#define SC_Seek             26
 #ifndef IN_ASM
 
 /* The system call interface.  These are the operations the Nachos
@@ -199,6 +199,8 @@ int Up(char* name);
 
 /* Use class Stable to make a process wait */
 int Down(char* name);
+
+int Seek(int pos, OpenFileID id);
 
 
 #endif /* IN_ASM */

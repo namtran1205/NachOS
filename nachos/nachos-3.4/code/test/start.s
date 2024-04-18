@@ -256,6 +256,17 @@ Down:
 	j	$31
 	.end Down
 
+
+	.globl Seek
+	.ent Seek
+
+Seek:
+	addiu $2, $0, SC_Seek
+	syscall
+	j	$31
+	.end Seek
+	
+
 /* dummy function to keep gcc happy */
         .globl  __main
         .ent    __main
