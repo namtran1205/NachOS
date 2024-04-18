@@ -102,6 +102,8 @@ int main()
 			Close(si_output);
 			return 1;
 		}
+
+		// viet các hành lý trong 1 thoi diem vao file khách hàng 
 		while(1)
 		{
 			if(Read(&c_readFile, 1, si_input) < 1)
@@ -109,6 +111,8 @@ int main()
 				// Doc toi cuoi file
 				break;
 			}
+
+			//Tiếp tục đọc 1 ký tự cho đến hết 1 hàng (Xử lý từng đợt sinh viên)
 			if(c_readFile != '\n')
 			{
 				Write(&c_readFile, 1, si_sinhvien);				
@@ -117,7 +121,6 @@ int main()
 				break;
 						
 		}
-		// Dong file sinhvien.txt lai
 		Close(si_sinhvien);
 			
 		// Goi tien trinh sinhvien hoat dong
@@ -126,7 +129,7 @@ int main()
 		// Tien trinh chinh phai cho 
 		Down("main");	
 		
-		// Thuc hien doc file tu result va ghi vao ket qua o output.txt
+		// Đọc file result, ghi kết quả vào output.txt
 		si_result = Open("result.txt", 1);
 		if(si_result == -1)
 		{
@@ -149,6 +152,8 @@ int main()
 				Up("m_vn");
 				break;
 			}
+			// Write(&c_readFile, 1, si_sinhvien);				
+
 			Write(&c_readFile, 1, si_output);
 			Write(" ", 1, si_output);
 			

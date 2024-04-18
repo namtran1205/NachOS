@@ -5,7 +5,7 @@ void main()
 {
 	// Khai bao
 	int f_Success; // Bien co dung de kiem tra thanh cong
-	SpaceId si_sinhvien, si_voinuoc;	// Bien id cho file
+	SpaceId si_sinhvien, si_voinuoc, si_result;	// Bien id cho file
 	char c_readFile;	// Bien ki tu luu ki tu doc tu file
 	int flag_VN;		// Bien co de nhay den tien trinh voinuoc
 	int flag_MAIN;		// Bien co de nhay den tien trinh main
@@ -50,8 +50,7 @@ void main()
 			return;
 		}
 		
-
-		// Mo file voinuoc.txt de ghi tung dung tich nuoc cua sinhvien
+		// Mở voinuoc.txt để ghi TỪNG dung tích -> sinhvien.txt
 		si_voinuoc = Open("voinuoc.txt", 0);
 		if(si_voinuoc == -1)
 		{
@@ -59,8 +58,20 @@ void main()
 			Up("main"); // tro ve tien trinh chinh
 			return;
 		}
+
 		
-		// Ghi dung tich vao file voinuoc.txt tu file sinhvien.txt
+		si_result = Open("result.txt", 0);
+		if(si_result == -1)
+		{
+			Close(si_result);
+			Up("main"); // tro ve tien trinh chinh
+			return;
+		}
+
+
+
+		// Ghi TỪNG dung tich vao file voinuoc.txt tu file sinhvien.txt
+		//Ghi TỪNG dung tích vào file result.txt từ file sinhvien.txt
 		while(i_File < lengthFile)
 		{
 			flag_VN = 0;
