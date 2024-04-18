@@ -35,7 +35,7 @@ CPP = gcc -E
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
 
-all: halt shell matmult sort checkNACHOS help ascii quicksort mergesort ping pong pingpong SinhVienVoiNuoc SinhVien VoiNuoc
+all: halt shell matmult sort checkNACHOS help ascii quicksort mergesort ping pong pingpong PassengerScanner Passenger Scanner
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.c > strt.s
@@ -117,23 +117,23 @@ pingpong: pingpong.o start.o
 	../bin/coff2noff pingpong.coff pingpong
 
 
-SinhVien.o: SinhVien.c
-	$(CC) $(CFLAGS) -c SinhVien.c
-SinhVien: SinhVien.o start.o
-	$(LD) $(LDFLAGS) start.o SinhVien.o -o SinhVien.coff
-	../bin/coff2noff SinhVien.coff SinhVien
+Passenger.o: Passenger.c
+	$(CC) $(CFLAGS) -c Passenger.c
+Passenger: Passenger.o start.o
+	$(LD) $(LDFLAGS) start.o Passenger.o -o Passenger.coff
+	../bin/coff2noff Passenger.coff Passenger
 
 
-VoiNuoc.o: VoiNuoc.c
-	$(CC) $(CFLAGS) -c VoiNuoc.c
-VoiNuoc: VoiNuoc.o start.o
-	$(LD) $(LDFLAGS) start.o VoiNuoc.o -o VoiNuoc.coff
-	../bin/coff2noff VoiNuoc.coff VoiNuoc
+Scanner.o: Scanner.c
+	$(CC) $(CFLAGS) -c Scanner.c
+Scanner: Scanner.o start.o
+	$(LD) $(LDFLAGS) start.o Scanner.o -o Scanner.coff
+	../bin/coff2noff Scanner.coff Scanner
 
 
 
-SinhVienVoiNuoc.o: SinhVienVoiNuoc.c
-	$(CC) $(CFLAGS) -c SinhVienVoiNuoc.c
-SinhVienVoiNuoc: SinhVienVoiNuoc.o start.o
-	$(LD) $(LDFLAGS) start.o SinhVienVoiNuoc.o -o SinhVienVoiNuoc.coff
-	../bin/coff2noff SinhVienVoiNuoc.coff SinhVienVoiNuoc
+PassengerScanner.o: PassengerScanner.c
+	$(CC) $(CFLAGS) -c PassengerScanner.c
+PassengerScanner: PassengerScanner.o start.o
+	$(LD) $(LDFLAGS) start.o PassengerScanner.o -o PassengerScanner.coff
+	../bin/coff2noff PassengerScanner.coff PassengerScanner

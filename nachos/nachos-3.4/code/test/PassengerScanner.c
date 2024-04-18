@@ -8,7 +8,7 @@ int main()
 {
 	// KHAI BAO
 	int f_Success; // Bien co dung de kiem tra thanh cong
-	SpaceId si_input, si_output, si_sinhvien, si_result;	// Bien id cho file
+	SpaceId si_input, si_output, si_passenger, si_result;	// Bien id cho file
 	int SLTD;	// Luu so luong thoi diem xet
 	char c_readFile;	// Bien ki tu luu ki tu doc tu file
 	//int flag;
@@ -20,13 +20,13 @@ int main()
 	f_Success = CreateSemaphore("main",0);
 	if(f_Success == -1)
 		return 1;
-	f_Success = CreateSemaphore("sinhvien", 0);
+	f_Success = CreateSemaphore("passenger", 0);
 	if(f_Success == -1)
 		return 1;
-	f_Success = CreateSemaphore("voinuoc", 0);
+	f_Success = CreateSemaphore("scanner", 0);
 	if(f_Success == -1)
 		return 1;
-	f_Success = CreateSemaphore("m_vn", 0);
+	f_Success = CreateSemaphore("_scanner", 0);
 	if(f_Success == -1)
 		return 1;
 	
@@ -65,7 +65,7 @@ int main()
 
 
 	// Goi thuc thi tien trinh sinhvien.c
-	f_Success = Exec("./test/SinhVien");
+	f_Success = Exec("./test/Passenger");
 	if(f_Success == -1)
 	{
 		Close(si_input);
@@ -74,7 +74,7 @@ int main()
 	}
 
 	// Goi thuc thi tien trinh voinuoc.c
-	f_Success = Exec("./test/VoiNuoc");
+	f_Success = Exec("./test/Scanner");
 	if(f_Success == -1)
 	{
 		Close(si_input);
@@ -86,7 +86,7 @@ int main()
 	while(SLTD--)
 	{
 		// Tao file sinhvien.txt
-		f_Success = Create("sinhvien.txt");
+		f_Success = Create("passenger.txt");
 		if(f_Success == -1)
 		{
 			Close(si_input);
@@ -95,40 +95,35 @@ int main()
 		}
 		
 		// Mo file sinhvien.txt de ghi tung dong sinhvien tu file input.txt
-		si_sinhvien = Open("sinhvien.txt", 0);
-		if(si_sinhvien == -1)
+		si_passenger = Open("passenger.txt", 0);
+		if(si_passenger == -1)
 		{
 			Close(si_input);
 			Close(si_output);
 			return 1;
 		}
 
-		// viet các hành lý trong 1 thoi diem vao file khách hàng 
 		while(1)
 		{
 			if(Read(&c_readFile, 1, si_input) < 1)
 			{
-				// Doc toi cuoi file
 				break;
 			}
 
 			//Tiếp tục đọc 1 ký tự cho đến hết 1 hàng (Xử lý từng đợt sinh viên)
 			if(c_readFile != '\n')
 			{
-				Write(&c_readFile, 1, si_sinhvien);				
+				Write(&c_readFile, 1, si_passenger);				
 			}
 			else
 				break;
 						
 		}
-		Close(si_sinhvien);
-			
+		Close(si_passenger);	
 		// Goi tien trinh sinhvien hoat dong
-		Up("sinhvien");
-
+		Up("passenger");
 		// Tien trinh chinh phai cho 
 		Down("main");	
-		
 		// Đọc file result, ghi kết quả vào output.txt
 		si_result = Open("result.txt", 1);
 		if(si_result == -1)
@@ -137,31 +132,22 @@ int main()
 			Close(si_output);
 			return 1;
 		}
-
-		PrintString("\n Lan thu: ");
-		PrintInt(SLTD);
-		PrintString("\n");	
-
-		// Doc cac voi vao output.txt		
+		// PrintString("\n Lan thu: ");
+		// PrintInt(SLTD);
+		// PrintString("\n");	
 		while(1)
 		{
 			if(Read(&c_readFile, 1, si_result)  < 1)
 			{
 				Write("\r\n", 2, si_output);
 				Close(si_result);
-				Up("m_vn");
+				Up("_scanner");
 				break;
 			}
-			// Write(&c_readFile, 1, si_sinhvien);				
-
 			Write(&c_readFile, 1, si_output);
 			Write(" ", 1, si_output);
-			
 		}
-		
 	}
-	
-	
 	Close(si_input);
 	Close(si_output);
 	return 0;	
