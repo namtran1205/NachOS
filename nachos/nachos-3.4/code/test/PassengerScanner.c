@@ -1,155 +1,142 @@
 #include "syscall.h"
 #include "copyright.h"
 
-#define MAX_LENGTH 32
-
-
 int main()
 {
-	// KHAI BAO
-	int f_Success; // Bien co dung de kiem tra thanh cong
-	SpaceId si_input, si_output, si_passenger, si_result;	// Bien id cho file
-	int SLTD;	// Luu so luong thoi diem xet
-	char c_readFile;	// Bien ki tu luu ki tu doc tu file
-	//int flag;
+    // Declaration
+    int success;                                    // Variable to check for success
+    SpaceId inputId, outputId, passengerId, resultId;// File IDs
+    int numTimeMoments;                             // Number of time moments to process
+    char currentChar;                               // Current character read from file
 
-	//-----------------------------------------------------------
+    // Create semaphores
+    success = CreateSemaphore("main", 0);
+    if (success == -1)
+        return 1;
+    success = CreateSemaphore("passenger", 0);
+    if (success == -1)
+        return 1;
+    success = CreateSemaphore("scanner", 0);
+    if (success == -1)
+        return 1;
+    success = CreateSemaphore("_scanner", 0);
+    if (success == -1)
+        return 1;
+    
+    // Create output file "output.txt"
+    success = Create("output.txt");
+    if (success == -1)
+        return 1;
+    
+    // Open input file "input.txt" for reading
+    inputId = Open("input.txt", 1);
+    if (inputId == -1)
+        return 1;
+    
+    // Open output file "output.txt" for reading and writing
+    outputId = Open("output.txt", 0);
+    if (outputId == -1)
+    {
+        Close(inputId);
+        return 1;
+    }
 
+    // Read the number of time moments from input file
+    numTimeMoments = 0;
+    while (1)
+    {
+        Read(&currentChar, 1, inputId);
+        if (currentChar != '\n')
+        {
+            if (currentChar >= '0' && currentChar <= '9')
+                numTimeMoments = numTimeMoments * 10 + (currentChar - '0');
+        }
+        else
+            break;
+    }
 
-	// Khoi tao 4 Semaphore de quan ly 3 tien trinh
-	f_Success = CreateSemaphore("main",0);
-	if(f_Success == -1)
-		return 1;
-	f_Success = CreateSemaphore("passenger", 0);
-	if(f_Success == -1)
-		return 1;
-	f_Success = CreateSemaphore("scanner", 0);
-	if(f_Success == -1)
-		return 1;
-	f_Success = CreateSemaphore("_scanner", 0);
-	if(f_Success == -1)
-		return 1;
-	
-	// Tao file output.txt de ghi ket qua cuoi cung	
-	f_Success = Create("output.txt");
-	if(f_Success == -1)
-		return 1;
-	
-	// Mo file input.txt chi de doc
-	si_input = Open("input.txt", 1);
-	if(si_input == -1)
-		return 1;
-	
-	// Mo file output.txt de doc va ghi
-	si_output = Open("output.txt", 0);
-	if(si_output == -1)
-	{
-		Close(si_input);
-		return 1;
-	}
+    // Execute Passenger.c process
+    success = Exec("./test/Passenger");
+    if (success == -1)
+    {
+        Close(inputId);
+        Close(outputId);
+        return 1;
+    }
 
-	// Doc so luong thoi diem xet o file input.txt
-	//**** Thuc hien xong doan lenh duoi thi con tro file o input.txt o dong 1
-	SLTD = 0;
-	while(1)
-	{
-		Read(&c_readFile, 1, si_input);
-		if(c_readFile != '\n')
-		{
-			if(c_readFile >= '0' && c_readFile <= '9')
-				SLTD = SLTD * 10 + (c_readFile - 48);
-		}
-		else
-			break;
-	}
+    // Execute Scanner.c process
+    success = Exec("./test/Scanner");
+    if (success == -1)
+    {
+        Close(inputId);
+        Close(outputId);
+        return 1;
+    }
 
+    // Process each time moment
+    while (numTimeMoments--)
+    {
+        // Create passenger file "passenger.txt"
+        success = Create("passenger.txt");
+        if (success == -1)
+        {
+            Close(inputId);
+            Close(outputId);
+            return 1;
+        }
+        
+        // Open passenger file "passenger.txt" for writing
+        passengerId = Open("passenger.txt", 0);
+        if (passengerId == -1)
+        {
+            Close(inputId);
+            Close(outputId);
+            return 1;
+        }
 
-	// Goi thuc thi tien trinh sinhvien.c
-	f_Success = Exec("./test/Passenger");
-	if(f_Success == -1)
-	{
-		Close(si_input);
-		Close(si_output);
-		return 1;
-	}
+        // Read from input file and write to passenger file
+        while (1)
+        {
+            if (Read(&currentChar, 1, inputId) < 1)
+            {
+                break;
+            }
 
-	// Goi thuc thi tien trinh voinuoc.c
-	f_Success = Exec("./test/Scanner");
-	if(f_Success == -1)
-	{
-		Close(si_input);
-		Close(si_output);
-		return 1;
-	}
-
-	// Thuc hien xu ly khi nao het thoi diem xet thi thoi
-	while(SLTD--)
-	{
-		// Tao file sinhvien.txt
-		f_Success = Create("passenger.txt");
-		if(f_Success == -1)
-		{
-			Close(si_input);
-			Close(si_output);
-			return 1;
-		}
-		
-		// Mo file sinhvien.txt de ghi tung dong sinhvien tu file input.txt
-		si_passenger = Open("passenger.txt", 0);
-		if(si_passenger == -1)
-		{
-			Close(si_input);
-			Close(si_output);
-			return 1;
-		}
-
-		while(1)
-		{
-			if(Read(&c_readFile, 1, si_input) < 1)
-			{
-				break;
-			}
-
-			//Tiếp tục đọc 1 ký tự cho đến hết 1 hàng (Xử lý từng đợt sinh viên)
-			if(c_readFile != '\n')
-			{
-				Write(&c_readFile, 1, si_passenger);				
-			}
-			else
-				break;
-						
-		}
-		Close(si_passenger);	
-		// Goi tien trinh sinhvien hoat dong
-		Up("passenger");
-		// Tien trinh chinh phai cho 
-		Down("main");	
-		// Đọc file result, ghi kết quả vào output.txt
-		si_result = Open("result.txt", 1);
-		if(si_result == -1)
-		{
-			Close(si_input);
-			Close(si_output);
-			return 1;
-		}
-		// PrintString("\n Lan thu: ");
-		// PrintInt(SLTD);
-		// PrintString("\n");	
-		while(1)
-		{
-			if(Read(&c_readFile, 1, si_result)  < 1)
-			{
-				Write("\r\n", 2, si_output);
-				Close(si_result);
-				Up("_scanner");
-				break;
-			}
-			Write(&c_readFile, 1, si_output);
-			Write(" ", 1, si_output);
-		}
-	}
-	Close(si_input);
-	Close(si_output);
-	return 0;	
-	
+            // Continue reading 1 character until the end of a line (processing each batch of passengers)
+            if (currentChar != '\n')
+            {
+                Write(&currentChar, 1, passengerId);                
+            }
+            else
+                break;                        
+        }
+        Close(passengerId); 
+        // Start the passenger process
+        Up("passenger");
+        // Main thread must wait
+        Down("main");    
+        // Read from result file and write the result to output file "output.txt"
+        resultId = Open("result.txt", 1);
+        if (resultId == -1)
+        {
+            Close(inputId);
+            Close(outputId);
+            return 1;
+        }
+        while (1)
+        {
+            if (Read(&currentChar, 1, resultId)  < 1)
+            {
+                Write("\r\n", 2, outputId);
+                Close(resultId);
+                Up("_scanner");
+                break;
+            }
+            Write(&currentChar, 1, outputId);
+            Write(" ", 1, outputId);
+        }
+    }
+    Close(inputId);
+    Close(outputId);
+    return 0;    
 }

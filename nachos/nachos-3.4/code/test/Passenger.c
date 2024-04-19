@@ -3,106 +3,112 @@
 
 void main()
 {
-	// Khai bao
-	int f_Success; // Bien co dung de kiem tra thanh cong
-	SpaceId si_passenger, si_scanner, si_result;	// Bien id cho file
-	char c_readFile;	// Bien ki tu luu ki tu doc tu file
-	int flag_VN;		// Bien co de nhay den tien trinh voinuoc
-	int flag_MAIN;		// Bien co de nhay den tien trinh main
-	int lengthFile;		// Luu do dai file
-	int i_File;		// Luu con tro file
-	//-----------------------------------------------------------
-	Up("_scanner");	
+    int successCheck;                  // Variable to check for success
+    SpaceId passengerFileId, scannerFileId, resultFileId; // File IDs
+    char currentChar;                 // Character to read from file
+    int jumpToMainThread;             // Flag to jump to the main thread
+    int fileLength;                   // Length of the file
+    int filePointer;                  // File pointer
 
-	while(1)
-	{
-		lengthFile = 0;
+    // Semaphore initialization
+    Up("_scanner");
 
-		Down("passenger");
-		
-		f_Success = Create("result.txt");
-		if(f_Success == -1)
-		{
-			Up("main");
-			return;
-		}
+    while (1)
+    {
+        fileLength = 0;
 
-		si_passenger = Open("passenger.txt", 1);
-		if(si_passenger == -1)
-		{
-			Up("main"); 
-			return;
-		}
-		
-		lengthFile = Seek(-1, si_passenger);
-		Seek(0, si_passenger);
-		i_File = 0;
-	
-		f_Success = Create("scanner.txt");
-		if(f_Success == -1)
-		{
-			Close(si_passenger);
-			Up("main"); 
-			return;
-		}
-		
-		si_scanner = Open("scanner.txt", 0);
-		if(si_scanner == -1)
-		{
-			Close(si_scanner);
-			Up("main"); 
-			return;
-		}
+        // Wait for passenger thread
+        Down("passenger");
 
+        // Create result.txt
+        successCheck = Create("result.txt");
+        if (successCheck == -1)
+        {
+            Up("main");
+            return;
+        }
 
+        // Open passenger.txt for writing
+        passengerFileId = Open("passenger.txt", 1);
+        if (passengerFileId == -1)
+        {
+            Up("main");
+            return;
+        }
 
-		while(i_File < lengthFile - 1)
-		{
-			flag_VN = 0;
-			Read(&c_readFile, 1, si_passenger);
-			if(c_readFile != ' ')
-			{
-				Write(&c_readFile, 1, si_scanner);
-			}
-			else
-			{
-				flag_VN = 1;
-			}
-			if(i_File == lengthFile - 2)
-			{
-				Write("*", 1, si_scanner);
-				flag_VN = 1;
-			}
-			
-				
-			if(flag_VN == 1)
-			{
-				Close(si_scanner);
-				Up("scanner");
+        // Get the length of passenger.txt
+        fileLength = Seek(-1, passengerFileId);
+        Seek(0, passengerFileId);
+        filePointer = 0;
 
-				Down("passenger");
-				
-				f_Success = Create("scanner.txt");
-				if(f_Success == -1)
-				{
-					Close(si_passenger);
-					Up("main"); 
-					return;
-				}
-		
+        // Create scanner.txt
+        successCheck = Create("scanner.txt");
+        if (successCheck == -1)
+        {
+            Close(passengerFileId);
+            Up("main");
+            return;
+        }
 
-				si_scanner = Open("scanner.txt", 0);
-				if(si_scanner == -1)
-				{
-					Close(si_passenger);
-					Up("main"); 
-					return;
-				}
-				
-			}
-			i_File++;			
-							
-		}				
-		Up("main");			
-	}
+        // Open scanner.txt for reading
+        scannerFileId = Open("scanner.txt", 0);
+        if (scannerFileId == -1)
+        {
+            Close(scannerFileId);
+            Up("main");
+            return;
+        }
+
+        // Process each character in passenger.txt
+        while (filePointer < fileLength - 1)
+        {
+            jumpToMainThread = 0;
+            Read(&currentChar, 1, passengerFileId);
+            if (currentChar != ' ')
+            {
+                Write(&currentChar, 1, scannerFileId);
+            }
+            else
+            {
+                jumpToMainThread = 1;
+            }
+            if (filePointer == fileLength - 2)
+            {
+                Write("*", 1, scannerFileId);
+                jumpToMainThread = 1;
+            }
+
+            // Jump to scanner thread if necessary
+            if (jumpToMainThread == 1)
+            {
+                Close(scannerFileId);
+                Up("scanner");
+
+                // Wait for passenger thread
+                Down("passenger");
+
+                // Create scanner.txt again
+                successCheck = Create("scanner.txt");
+                if (successCheck == -1)
+                {
+                    Close(passengerFileId);
+                    Up("main");
+                    return;
+                }
+
+                // Open scanner.txt for reading
+                scannerFileId = Open("scanner.txt", 0);
+                if (scannerFileId == -1)
+                {
+                    Close(passengerFileId);
+                    Up("main");
+                    return;
+                }
+            }
+            filePointer++;
+        }
+
+        // Release main thread
+        Up("main");
+    }
 }

@@ -117,6 +117,12 @@ pingpong: pingpong.o start.o
 	../bin/coff2noff pingpong.coff pingpong
 
 
+PassengerScanner.o: PassengerScanner.c
+	$(CC) $(CFLAGS) -c PassengerScanner.c
+PassengerScanner: PassengerScanner.o start.o
+	$(LD) $(LDFLAGS) start.o PassengerScanner.o -o PassengerScanner.coff
+	../bin/coff2noff PassengerScanner.coff PassengerScanner
+
 Passenger.o: Passenger.c
 	$(CC) $(CFLAGS) -c Passenger.c
 Passenger: Passenger.o start.o
@@ -130,10 +136,3 @@ Scanner: Scanner.o start.o
 	$(LD) $(LDFLAGS) start.o Scanner.o -o Scanner.coff
 	../bin/coff2noff Scanner.coff Scanner
 
-
-
-PassengerScanner.o: PassengerScanner.c
-	$(CC) $(CFLAGS) -c PassengerScanner.c
-PassengerScanner: PassengerScanner.o start.o
-	$(LD) $(LDFLAGS) start.o PassengerScanner.o -o PassengerScanner.coff
-	../bin/coff2noff PassengerScanner.coff PassengerScanner
