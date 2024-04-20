@@ -3,24 +3,24 @@
 
 void main()
 {
-    int successCheck;                  // Variable to check for success
-    SpaceId passengerFileId, scannerFileId, resultFileId; // File IDs
-    char currentChar;                 // Character to read from file
-    int jumpToMainThread;             // Flag to jump to the main thread
-    int fileLength;                   // Length of the file
-    int filePointer;                  // File pointer
+    int successCheck;                  // bien kiem tra co thanh cong khi mo, tao file
+    SpaceId passengerFileId, scannerFileId, resultFileId; // File ID
+    char currentChar;                 // bien tam luu ki tu duoc doc tu file
+    int jumpToScanner;             // Flag bao hieu can chay tien trinh Scanner
+    int fileLength;                   // Chieu dai file
+    int filePointer;                  // dai dien con tro doc trong file 
 
-    // Semaphore initialization
+    // khoi dong tien trinh Scanner
     Up("_scanner");
 
     while (1)
     {
         fileLength = 0;
 
-        // Wait for passenger thread
+        // cho yeu cau tu main
         Down("passenger");
 
-        // Create result.txt
+        // tao file  "result.txt" de luu ket qua tra ve main
         successCheck = Create("result.txt");
         if (successCheck == -1)
         {
@@ -28,7 +28,7 @@ void main()
             return;
         }
 
-        // Open passenger.txt for writing
+        // mo "passenger.txt" de doc yeu cau cua main
         passengerFileId = Open("passenger.txt", 1);
         if (passengerFileId == -1)
         {
@@ -36,12 +36,12 @@ void main()
             return;
         }
 
-        // Get the length of passenger.txt
+        // Lay chieu dai cua file "passenger.txt"
         fileLength = Seek(-1, passengerFileId);
         Seek(0, passengerFileId);
         filePointer = 0;
 
-        // Create scanner.txt
+        // tao file "scanner.txt" de gui cong viec cho tien trinh scanner
         successCheck = Create("scanner.txt");
         if (successCheck == -1)
         {
@@ -50,7 +50,7 @@ void main()
             return;
         }
 
-        // Open scanner.txt for reading
+        // Mo file "scanner.txt" 
         scannerFileId = Open("scanner.txt", 0);
         if (scannerFileId == -1)
         {
@@ -59,10 +59,13 @@ void main()
             return;
         }
 
-        // Process each character in passenger.txt
+        // Doc va ghi tung so hanh ly cua tung hanh khach vao file "scanner.txt" 
+        // Yeu cau scanner xu li cho tung hanh khach
         while (filePointer < fileLength - 1)
         {
-            jumpToMainThread = 0;
+            
+            jumpToScanner = 0;
+            // doc va ghi so luong hanh ly cua tung hanh khach
             Read(&currentChar, 1, passengerFileId);
             if (currentChar != ' ')
             {
@@ -70,24 +73,28 @@ void main()
             }
             else
             {
-                jumpToMainThread = 1;
+                // bao hieu da doc va ghi xong so luong hanh ly cua 1 hanh khach
+                jumpToScanner = 1;
             }
+            
+            // truong hop da doc toi hanh khach cuoi cung
             if (filePointer == fileLength - 2)
             {
-                Write("*", 1, scannerFileId);
-                jumpToMainThread = 1;
+                Write("*", 1, scannerFileId); // danh dau ket thuc 1 thoi diem
+                jumpToScanner = 1;      // bao hieu da doc xong so luong hanh ly cua 1 hanh khach
             }
 
-            // Jump to scanner thread if necessary
-            if (jumpToMainThread == 1)
+            // Xu li khi da doc va ghi xong 1 hanh khach
+            if (jumpToScanner == 1)
             {
-                Close(scannerFileId);
-                Up("scanner");
+                Close(scannerFileId);   // dong file truoc khi danh thuc tien trinh Scanner
+                
+                Up("scanner");   // danh thuc tien trinh Scanner de xu li hanh khach vua ghi vao file "scanner.txt"
 
-                // Wait for passenger thread
-                Down("passenger");
+                
+                Down("passenger");   // cho tien trinh Scanner xu li hoat tat
 
-                // Create scanner.txt again
+                // tao lai file "scanner.txt"
                 successCheck = Create("scanner.txt");
                 if (successCheck == -1)
                 {
@@ -96,7 +103,7 @@ void main()
                     return;
                 }
 
-                // Open scanner.txt for reading
+                // moi lai file "scanner.txt"
                 scannerFileId = Open("scanner.txt", 0);
                 if (scannerFileId == -1)
                 {
@@ -108,7 +115,7 @@ void main()
             filePointer++;
         }
 
-        // Release main thread
+        // tro ve main de ghi ket qua cho moi hanh khach
         Up("main");
     }
 }

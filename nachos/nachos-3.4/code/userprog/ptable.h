@@ -13,7 +13,7 @@ public:
     // nhớ khởi tạo bm và bmsem để sử dụng
     PTable(int size);               
     ~PTable();                          // hủy các đối tượng đã tạo
-    int ExecUpdate(char* name);         // Xử lý cho system call SC_Exit
+    int ExecUpdate(char* name);         // Xử lý cho system call SC_Exec
     int ExitUpdate(int ec);             // Xử lý cho system call SC_Exit
     int JoinUpdate(int id);             // Xử lý cho system call SC_Join
     int GetFreeSlot();                  // tìm free slot để lưu thông tin cho tiến trình mới

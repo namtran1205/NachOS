@@ -5,7 +5,7 @@ int main()
 {
 	int ping, pong;
 	int create_success;
-	create_success = CreateSemaphore("sem_ping", 4);
+	create_success = CreateSemaphore("sem_ping", 1);
 	if (create_success == 0)
 		PrintString("Create sem_ping successfully\n");
 	else
