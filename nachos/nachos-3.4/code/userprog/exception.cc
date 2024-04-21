@@ -885,7 +885,7 @@ void ExceptionHandler(ExceptionType which)
 			        if (oFile == NULL)
 			        {
 			        	printf("\nExec:: Can't open this file.");
-                        printf("exception.cc SC_EXEC open file ???? \n");
+                        printf("exception.cc SC_EXEC open file \n");
 			        	machine->WriteRegister(2,-1);
 			        	IncreasePC();
 			        	return;
